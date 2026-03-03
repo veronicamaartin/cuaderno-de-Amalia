@@ -258,7 +258,7 @@ todo <- fromJSON(paste0(API, 'protein'))
 str(estructura)
 str(todo)
 estructura3 <- estructura[['structures']][['pdb']]
-todas <- todo[['uniprot']]
+todas <- todo[['proteins']][['uniprot']]
 estructura3
 (estructura3/todas)*100
 
