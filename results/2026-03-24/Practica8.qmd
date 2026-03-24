@@ -1,0 +1,151 @@
+---
+title: "Practica8"
+format: html
+editor: visual
+---
+#Hay que tener instalado el paquete Biostrings, primero hay que comprobar que tenemos instalado el paquete BiocManager
+install.packages('BiocManager')
+BiocManager::install('Biostrings')
+##Los objetivos de esta practica son:Identificar proteínas ortólogas entre dos especies con BLASTP.
+#Realizar un PSI-BLAST contra la base de datos Swissprot.
+#Determinar el origen de las lecturas que no pudieron ser mapeadas a su genoma de referencia, usando BLASTN remoto.
+
+#Datos:
+#Para el primer ejercicio guardamos los genomas descomprimidos y guardados en dos archivos FASTA
+#Para el segundo ejercicio, se ejecuta el siguiente comando en Bash, asegurandonos de que estamos trabajando en la carpeta de Data
+#Para el tercer ejercicio hay que descargarlo pinchando en el link de la práctica
+#A veces se producen copias del mismo gen en el genoma, esas copias son entre ellas paralogos. Nosotros cuandoq ueremos utilizar secuencias de proteinas para estudiar la filogenia, utilizamos proteinas ortologas. una forma de identificarlas es, con los proteomas, con el BLAST miramos si encontramos mas de una homologia, pero si es el mejor hit reciproca, podemos considerar que son ortologas
+
+#Ejercicio 1
+```{bash}
+pwd
+if [ ! -e ../../data/buchnera.paa ]; then
+   # Creamos un archivo para enmascarar zonas de baja complejidad:
+   if [ ! -e buchnera_seg.asnb ]; then
+      segmasker -in ../../data/buchnera.fasta \
+                -infmt fasta \
+                -parse_seqids \
+                -outfmt maskinfo_asn1_bin \
+                -out ../../data/buchnera_seg.asnb
+   fi
+   # Y indexamos el archivo FASTA para BLAST:
+   makeblastdb  -in ../../data/buchnera.fasta \
+                -input_type fasta \
+                -dbtype prot \
+                -parse_seqids \
+                -mask_data ../../data/buchnera_seg.asnb \
+                -out ../../data/buchnera \
+                -title "Proteoma de Buchnera"
+fi
+# Hay que repetir todo esto para Blochmannia.
+```
+```{bash}
+pwd
+if [ ! -e ../../data/blochmannia.paa ]; then
+   # Creamos un archivo para enmascarar zonas de baja complejidad:
+   if [ ! -e blochmannia_seg.asnb ]; then
+      segmasker -in ../../data/blochmannia.fasta \
+                -infmt fasta \
+                -parse_seqids \
+                -outfmt maskinfo_asn1_bin \
+                -out ../../data/blochmannia_seg.asnb
+   fi
+   # Y indexamos el archivo FASTA para BLAST:
+   makeblastdb  -in ../../data/blochmannia.fasta \
+                -input_type fasta \
+                -dbtype prot \
+                -parse_seqids \
+                -mask_data ../../data/blochmannia_seg.asnb \
+                -out ../../data/blochmannia \
+                -title "Proteoma de Blochmannia"
+fi
+
+```
+#Ahora hay que realizar las búsquedas de BLASTP
+#Primero hacemos de Buchnera aphidicola hacia Blochmannia ocreatus
+```{bash}
+blastp -query ../../data/buchnera.fasta \
+       -db ../../data/blochmannia \
+       -out buc2blo.txt \
+       -outfmt '6 qseqid sseqid qlen slen length evalue bitscore' \
+       -evalue 0.001 \
+       -max_target_seqs 1
+```
+#Ahora desde Blochmannia ocreatus hacia Buchnera aphidicola
+```{bash}
+blastp -query ../../data/blochmannia.fasta \
+       -db ../../data/buchnera \
+       -out blo2buc.txt \
+       -outfmt '6 qseqid sseqid qlen slen length evalue bitscore' \
+       -evalue 0.001 \
+       -max_target_seqs 1
+```
+#Nos da un aviso de que es recomendado examinar 5 o mas matches, podemos consultar la ayuda de blastp -help
+```{bash}
+blastp -help
+```
+#Comparación de resultados
+```{r}
+buc2blo <- read.table(
+   'buc2blo.txt',
+   col.names = c('query', 'subject', 'qlen', 'slen',
+                 'length', 'evalue', 'bitscore')
+)
+blo2buc <- read.table(
+   'blo2buc.txt',
+   col.names = c('query', 'subject', 'qlen', 'slen',
+                 'length', 'evalue', 'bitscore')
+)
+```
+# buc2blo: cual es la proteina de blo mas parecida a cada una de buc 
+```{r}
+buc2blo$reverse <- blo2buc[
+   match(buc2blo$subject, blo2buc$query),
+   'subject'
+]
+coincidencias <- buc2blo[
+   buc2blo$query == buc2blo$reverse,
+   c('query', 'subject')
+]
+```
+#añade una columna a la tabla que la llama reverse, el truco es utilizar la funcion mathc para encontrar de la primera tabla la proteina de bloc en la segunda tabla
+#Ejercicio 2. PSI-BLAST
+```{bash}
+# Como Swissprot debería estar ya descargada en `../../data`, podemos sacar
+# de ahí la secuencia de la proteína escogida:
+blastdbcmd -db ../../data/swissprot -entry P39615 -out P39615.fa
+
+# Y ahora la usamos como query en psi-blast:
+psiblast -db ../../data/swissprot \
+         -query P39615.fa \
+         -out P39615.blastout.txt \
+         -evalue 0.1 \
+         -outfmt 7 \
+         -inclusion_ethresh 0.001 \
+         -num_iterations 7 \
+         -matrix BLOSUM62
+```
+#Ahora probamos con otra proteina como query, por ejemplo, con B1AJI8
+```{bash}
+# Como Swissprot debería estar ya descargada en `../../data`, podemos sacar
+# de ahí la secuencia de la proteína escogida:
+blastdbcmd -db ../../data/swissprot -entry B1AJI8 -out B1AJI8.fa
+
+# Y ahora la usamos como query en psi-blast:
+psiblast -db ../../data/swissprot \
+         -query B1AJI8.fa \
+         -out B1AJI8.blastout.txt \
+         -evalue 0.1 \
+         -outfmt 7 \
+         -inclusion_ethresh 0.001 \
+         -num_iterations 7 \
+         -matrix BLOSUM62
+```
+```{bash}
+psiblast -help
+```
+#Evalue es el numero esperado de alineamientos con una puntuacion 
+#inclusion_ethresh define el valor umbral de evalor #para hacer la busqueda mas sensible se repite el psiblasta hasta llegar a la convergencia
+
+
+
