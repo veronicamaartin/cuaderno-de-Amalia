@@ -1,0 +1,85 @@
+---
+title: "Practica11"
+format:
+  html: 
+    embed-resources: true
+---
+
+## Introducción
+
+En esta práctica vamos a trabajar con los resultados de la anotación estructural realizada sobre el ensamblaje de la práctica anterior. Desafortunadamente, los ordenadores virtuales no están preparados para realizar la anotación. Pero a continuación se muestran las órdenes que en un terminal de Bash producirían los resultados. Estas órdenes se supone que son ejecutadas desde una carpeta results/2026-04-21. \## Datos Las secuencias que vamos a anotar son el ensamblaje obtenido en la práctica anterior, que voy a suponer que se encuentran en una carpeta results/2026-04-16.
+
+Las evidencias que usaremos para encontrar los genes són secuencias de proteínas que esperamos encontrar codificadas en los cóntigos. Normalmente usaríamos las proteínas conocidas de alguna especie próxima. Usaremos las 6023 proteínas que sabemos que codifica el cromosoma 4 de Arabidopsis thalina. Las podéis descargar de Uniprot
+
+## Resultados
+
+Modificación de los nombres de las proteínas Al descargar las proteínas del cromosoma 4 de A. thaliana, el archivo FASTA contiene cabeceras demasiado extensas. Para facilitar el trabajo de GALBA vamos a modificar las cabeceras o nombres de las secuencias. \## Ejercicio 1 Sabiendo que una forma de hacerlo es la siguiente, incluye la orden en un bloque de Bash de tu documento de Quarto de tal manera que el archivo de entrada esté en tu carpeta data y el de salida en la misma carpeta de trabajo de la práctica actual, y además, que sólo se ejecute si el archivo de salida proteinas.fasta no existe.
+
+```{bash}
+if [ ! -f "proteinas.fasta" ]; then
+  awk '(/^>/){split($1, A, /\|/); print ">" A[2]}(/^[^>]/){print $0}' ../../data/uniprotkb_proteome_UP000006548_AND_prot_2026_04_28.fasta > proteinas.fasta
+fi
+
+```
+
+Análisis de los resultados de RepeatModeler
+
+## Ejercicio 2 
+Explora los resultados de RepeatModeler y trata de contestar las preguntas siguientes.
+
+**¿Cuántas familias de elementos transponibles se han encontrado?**
+```{bash}
+grep '>' At4-families.fa | wc -l
+```
+**¿Cuánto duró la ejecución del programa?**
+1 hora, 2 minutos y 16 minutos
+
+**¿Cuál dirías que es el archivo de salida más importante?**
+El consensi.fa
+
+## Suavizar la máscara
+
+Encontrarás la carpeta (comprimida) de resultados de RepeatMasker en el aula virtual. Descárgala y descomprimela en la carpeta de trabajo actual. La versión enmascarada tiene una máscara dura (RepeatMasker ha sustituído todos los elementos trasponibles y repeticiones por Ns), con lo que se ha perdido la información de la secuencia original en esas regiones. El programa GALBA recomienda partir de un ensamblaje con máscara suave, donde las regiones repetitivas están marcadas con letra minúscula. Para convertir la máscara dura en una máscara suave, utilizaremos bedtools.
+
+## Ejercicio 3 
+Instala el programa bedtools siguiendo las instrucciones oportunas para tu sistema en la página oficial Utiliza el ensamblaje original como archivo FASTA de entrada y el archivo GFF que ha producido RepetaMasker como coordenadas de las regiones a enmascarar. Lee el manual de bedtools maskfasta en este enlace y genera el ensamblaje con máscara suave llamado At4.soft.fa.
+
+```{bash}
+if [ ! -e At4.soft.fa ]; then
+  bedtools maskfasta \
+    -soft \
+    -fi ../2026-04-16/asm1/At4.fa \
+    -fo At4.soft.fa \
+    -bed RM01/At4.fa.out.gff
+fi
+
+
+
+```
+## GALBA
+Para ejecutar GALBA ha sido necesario crear algunas variables de entorno que indican donde puede GALBA encontrar un par de ejecutables más. Para facilitar la reproducibilidad, este tipo de definiciones deben aparecer al principio del bloque, donde son más visibles, para que sean fácilmente modificadas cuando las órdenes vayan a ejecutarse en otro ordenador.
+
+```{bash}
+export TSEBRA_PATH=/home/joiglu/bin/TSEBRA/bin/
+export MINIPROTHINT_PATH=/home/joiglu/bin/miniprothint/
+
+galba.pl --species="Arabidopsis thaliana" \
+         --genome=At4.soft.fa \
+         --prot_seq=proteinas.fasta
+```
+
+## EJERCICIO 4
+```{bash}
+eval: false 
+export TSEBRA_PATH=/home/amalia/bin/TSEBRA/bin/
+export MINIPROTHINT_PATH=/home/amalia/bin/miniprothint/
+
+galba.pl --species="Arabidopsis thaliana" \
+         --genome=At4.soft.fa \
+         --prot_seq=proteinas.fasta
+```
+
+De esta forma, cualquiera que ejecute el script puede modificar el PATH
+
+## Ejercicio 5
+Los que empiezan con galba son las salidas propias del sistema. El archivo mas importante es galba.gtf, que es la anotacion del ensamblaje del cromosoma 4 de Arabidopsis. No hay regiones no traducidas, porque no le hemos dado datos de expresion, sino de proteinas
