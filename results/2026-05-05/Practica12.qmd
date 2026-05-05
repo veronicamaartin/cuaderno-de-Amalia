@@ -1,0 +1,189 @@
+---
+title: "Practica12"
+---
+## Datos
+tilizaremos las medidas de expresión génica del archivo salmon.merged.gene_counts.tsv que podéis descargar en este enlace o en el aula virtual. Los datos proceden de 12 genotecas de RNA-seq de lecturas emparejadas, de muestras de Drosophila melanogaster de dos orígenes geográficos (Panamá y Maine) y dos tratamientos de temperatura (low y high) (Zhao 2015). Hay 3 réplicas biológicas para cada combinación de región y temperatura. Si tenéis curiosidad sobre cómo se han obtenido los recuentos de lecturas por gen a partir de los archivos FASTQ, podéis consultarlo en este enlace.
+
+Además, necesitáis el archivo dme_elev_samples.tsv, una tabla que indica a qué región y tratamiento pertenece cada muestra. Lo podéis descargar de este enlace o del aula virtual.
+
+Los dos archivos deben estar guardados en la carpeta de datos.
+
+## Exploración de datos
+```{r}
+muestras <- read.table('../../data/dme_elev_samples.tsv', header = TRUE)
+genex <- read.table('../../data/salmon.merged.gene_counts.tsv',
+                    header = TRUE)
+```
+
+## Ejercicio 1
+Recuerda dejar constancia en un bloque de código de cómo obtienes las respuestas.
+
+Usa la función paste() para añadir una columna a muestras que contenga la población y la temperatura unidas por _.
+```{r}
+help("paste")
+```
+
+```{r}
+paste(muestras$population, muestras$temp, sep = "_")
+#Ahora para crear una nueva columna:
+muestras$unido <- paste(muestras$population, muestras$temp, sep = "_")
+muestras
+```
+¿Cuál es el número total de lecturas por muestra?
+```{r}
+total_lecturas <- colSums(genex[ , -c(1,2)])
+total_lecturas
+```
+
+¿Los recuentos tienen distribuciones parecidas entre muestras?
+```{r}
+#| message: false
+library(tidyr)
+library(ggplot2)
+genex_long <- pivot_longer(
+  genex, 3:14, names_to = "sample",
+  values_to = "expression"
+)
+ggplot(data= genex_long,
+       mapping = aes(x = sample, y = expression)) +
+  geom_violin() + 
+  scale_y_continuous(trans ="log")
+```
+Enviar los nombres de las columnas a una nueva variable y las expresiones también. Ya le podemos decir que la x sea la muestra y la y la expresión. 
+
+```{r}
+pairs(genex[, -c(1,2)])
+```
+Es la nube de puntos de cada pareja de columnas, la diagonal es que lo genes con valores altos de expresion en una muestra tambien tienen valores altos de expresion en la otra muestra. Se concentran todos los puntos en la esquina inferior izquierda porque tienen muy poca expresion.  
+¿Cuántos genes no se expresan en absoluto en ninguna de las muestras?
+```{r}
+genes_no_expresados <- sum(rowSums(genex[, -c(1,2)]) ==0)
+genes_no_expresados
+```
+
+## Crear el objeto de clase DESeqDataset
+Para crear un objeto de clase DESeqDataSet necesitamos que las filas de la tabla muestras estén en el mismo orden que las columnas en genex. La función DESeqDataSetFromMatrix() necesita que los recuentos sean una matriz, no un marco de datos. Y en muestras debe haber factores.
+```{r}
+suppressMessages(library('DESeq2'))
+all(names(genex)[3:14] == muestras$sample)
+```
+
+```{r}
+# Pasamos la columna "sample" a nombres de fila:
+row.names(muestras) <- muestras$sample
+# Eliminamos la columna "sample":
+muestras$sample <- NULL
+# Y convertimos "population" y "temp" en factores:
+muestras$population <- factor(muestras$population,
+                              levels = c('maine', 'panama'))
+muestras$temp       <- factor(muestras$temp,
+                              levels = c('low', 'high'))
+muestras
+```
+Los datos de recuento deben ser números enteros y en forma de matriz
+```{r}
+row.names(genex) <- genex$gene_name
+genex$gene_name <- NULL
+genex$gene_id   <- NULL
+genex <- round(as.matrix(genex))
+```
+
+```{r}
+dds1 <- DESeqDataSetFromMatrix(
+   countData = genex,
+   colData = muestras,
+   design = ~ population + temp
+)
+dds1
+```
+
+## Prefiltrado
+Una fracción importante de genes no se están expresando en ningúna muestra. Aunque el filtrado no es necesario, ayuda a reducir la memoria ocupada por dds1:
+```{r}
+keep <- rowSums(counts(dds1)) > 0
+dds1 <- dds1[keep, ]
+```
+
+## Expresión diferencial
+```{r}
+dds1 <- DESeq(dds1)
+```
+
+```{r}
+res <- results(dds1)
+res
+```
+
+Por defecto, la función results() produce la tabla de resultados para el contraste entre el nivel último y el de referencia del último factor en la tabla que describe las muestras. En este caso, el factor es temp, el nivel de referencia es low y el otro nivel es high. Por tanto, los valores de log2FoldChange representan el logaritmo en base 2 de la relación entre niveles de expresión en muestras high respecto de muestras low.
+## Ejercicio 3
+Mira la ayuda de results() y genera también la tabla de resultados para el contraste entre las dos regiones de procedencia de las moscas.
+```{r}
+help("results")
+```
+
+```{r}
+dds2 <- DESeqDataSetFromMatrix(
+  countData = genex,
+  colData = muestras,
+  design = ~ population
+)
+dds2
+```
+```{r}
+keep <- rowSums(counts(dds2)) > 0
+dds2 <- dds2[keep, ]
+```
+```{r}
+dds2 <- DESeq(dds2)
+```
+```{r}
+res2 <- results(dds2)
+res2
+```
+
+
+Usa summary() sobre los resultados para ver el número de genes diferencialmente expresados entre cada par de condiciones.
+```{r}
+summary(res)
+```
+
+```{r}
+summary(res2)
+```
+El factor que mas afecta es la temperatura.
+¿Cuál es la tasa de falsos positivos (FDR)?
+Es 0.1, se ve del summary
+En la función results hay un parametro que es alpha, que es el umbral de significancia utilizado. Podemos utilizar un 5%. 
+## Graficas
+```{r}
+plotMA(res)
+```
+```{r}
+resShrink <- lfcShrink(dds1, coef = 'temp_high_vs_low',
+                       type = 'normal')
+plotMA(resShrink)
+```
+
+## Ejercicio 4
+¿Sabrías hacer una gráfica volcán?
+```{r}
+library(ggplot2)
+res_df <- as.data.frame(res)
+ggplot(res_df, aes(x = log2FoldChange, y = -log10(padj))) +
+  geom_point(alpha = 0.5) + 
+  theme_minimal()          
+```
+## Extraer datos transformados
+Aunque los datos de entrada no deben estar normalizados y la función DESeq() ya tiene en cuenta las diferencias de tamaño de genoteca entre muestras y la relación entre media y varianza, puede ser útil disponer de los datos normalizados para representarlos gráficamente. Para ello podemos usar las funciones vst() y assay():
+```{r}
+dds3 <- vst(dds1)
+NormCounts <- assay(dds3)
+```
+```{r}
+res3 <- res[! is.na(res$pvalue), ]
+res3 <- res[order(res$log2FoldChange),]
+heatmap(NormCounts[c(head(row.names(res), 100),
+                     tail(row.names(res), 100)), ],
+        Rowv = NA, Colv = NA)
+```
+## Ejercicio 5
