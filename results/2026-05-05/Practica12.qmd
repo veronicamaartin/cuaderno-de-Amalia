@@ -2,7 +2,7 @@
 title: "Practica12"
 ---
 ## Datos
-tilizaremos las medidas de expresión génica del archivo salmon.merged.gene_counts.tsv que podéis descargar en este enlace o en el aula virtual. Los datos proceden de 12 genotecas de RNA-seq de lecturas emparejadas, de muestras de Drosophila melanogaster de dos orígenes geográficos (Panamá y Maine) y dos tratamientos de temperatura (low y high) (Zhao 2015). Hay 3 réplicas biológicas para cada combinación de región y temperatura. Si tenéis curiosidad sobre cómo se han obtenido los recuentos de lecturas por gen a partir de los archivos FASTQ, podéis consultarlo en este enlace.
+Utilizaremos las medidas de expresión génica del archivo salmon.merged.gene_counts.tsv que podéis descargar en este enlace o en el aula virtual. Los datos proceden de 12 genotecas de RNA-seq de lecturas emparejadas, de muestras de Drosophila melanogaster de dos orígenes geográficos (Panamá y Maine) y dos tratamientos de temperatura (low y high) (Zhao 2015). Hay 3 réplicas biológicas para cada combinación de región y temperatura. Si tenéis curiosidad sobre cómo se han obtenido los recuentos de lecturas por gen a partir de los archivos FASTQ, podéis consultarlo en este enlace.
 
 Además, necesitáis el archivo dme_elev_samples.tsv, una tabla que indica a qué región y tratamiento pertenece cada muestra. Lo podéis descargar de este enlace o del aula virtual.
 
@@ -18,7 +18,7 @@ genex <- read.table('../../data/salmon.merged.gene_counts.tsv',
 ## Ejercicio 1
 Recuerda dejar constancia en un bloque de código de cómo obtienes las respuestas.
 
-Usa la función paste() para añadir una columna a muestras que contenga la población y la temperatura unidas por _.
+**Usa la función paste() para añadir una columna a muestras que contenga la población y la temperatura unidas por _.**
 ```{r}
 help("paste")
 ```
@@ -29,13 +29,13 @@ paste(muestras$population, muestras$temp, sep = "_")
 muestras$unido <- paste(muestras$population, muestras$temp, sep = "_")
 muestras
 ```
-¿Cuál es el número total de lecturas por muestra?
+**¿Cuál es el número total de lecturas por muestra?**
 ```{r}
 total_lecturas <- colSums(genex[ , -c(1,2)])
 total_lecturas
 ```
 
-¿Los recuentos tienen distribuciones parecidas entre muestras?
+**¿Los recuentos tienen distribuciones parecidas entre muestras?**
 ```{r}
 #| message: false
 library(tidyr)
@@ -55,7 +55,7 @@ Enviar los nombres de las columnas a una nueva variable y las expresiones tambi�
 pairs(genex[, -c(1,2)])
 ```
 Es la nube de puntos de cada pareja de columnas, la diagonal es que lo genes con valores altos de expresion en una muestra tambien tienen valores altos de expresion en la otra muestra. Se concentran todos los puntos en la esquina inferior izquierda porque tienen muy poca expresion.  
-¿Cuántos genes no se expresan en absoluto en ninguna de las muestras?
+**¿Cuántos genes no se expresan en absoluto en ninguna de las muestras?**
 ```{r}
 genes_no_expresados <- sum(rowSums(genex[, -c(1,2)]) ==0)
 genes_no_expresados
@@ -116,7 +116,7 @@ res
 
 Por defecto, la función results() produce la tabla de resultados para el contraste entre el nivel último y el de referencia del último factor en la tabla que describe las muestras. En este caso, el factor es temp, el nivel de referencia es low y el otro nivel es high. Por tanto, los valores de log2FoldChange representan el logaritmo en base 2 de la relación entre niveles de expresión en muestras high respecto de muestras low.
 ## Ejercicio 3
-Mira la ayuda de results() y genera también la tabla de resultados para el contraste entre las dos regiones de procedencia de las moscas.
+**Mira la ayuda de results() y genera también la tabla de resultados para el contraste entre las dos regiones de procedencia de las moscas.**
 ```{r}
 help("results")
 ```
@@ -142,7 +142,7 @@ res2
 ```
 
 
-Usa summary() sobre los resultados para ver el número de genes diferencialmente expresados entre cada par de condiciones.
+**Usa summary() sobre los resultados para ver el número de genes diferencialmente expresados entre cada par de condiciones.**
 ```{r}
 summary(res)
 ```
@@ -151,7 +151,7 @@ summary(res)
 summary(res2)
 ```
 El factor que mas afecta es la temperatura.
-¿Cuál es la tasa de falsos positivos (FDR)?
+**¿Cuál es la tasa de falsos positivos (FDR)?**
 Es 0.1, se ve del summary
 En la función results hay un parametro que es alpha, que es el umbral de significancia utilizado. Podemos utilizar un 5%. 
 ## Graficas
@@ -165,7 +165,7 @@ plotMA(resShrink)
 ```
 
 ## Ejercicio 4
-¿Sabrías hacer una gráfica volcán?
+**¿Sabrías hacer una gráfica volcán?**
 ```{r}
 library(ggplot2)
 res_df <- as.data.frame(res)
