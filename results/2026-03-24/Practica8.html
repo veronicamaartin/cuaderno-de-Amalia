@@ -1,0 +1,1419 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.6.42">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Practica8</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="Practica8_files/libs/clipboard/clipboard.min.js"></script>
+<script src="Practica8_files/libs/quarto-html/quarto.js"></script>
+<script src="Practica8_files/libs/quarto-html/popper.min.js"></script>
+<script src="Practica8_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="Practica8_files/libs/quarto-html/anchor.min.js"></script>
+<link href="Practica8_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="Practica8_files/libs/quarto-html/quarto-syntax-highlighting-2f5df379a58b258e96c21c0638c20c03.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="Practica8_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="Practica8_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="Practica8_files/libs/bootstrap/bootstrap-312894ccb978b36d445ea14dd6c16bbe.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+
+
+</head>
+
+<body class="fullcontent">
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Practica8</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>Hay que tener instalado el paquete Biostrings, primero hay que comprobar que tenemos instalado el paquete BiocManager install.packages(‘BiocManager’) BiocManager::install(‘Biostrings’) Los <strong>objetivos</strong> de esta practica son: Identificar proteínas ortólogas entre dos especies con BLASTP. Realizar un PSI-BLAST contra la base de datos Swissprot. Determinar el origen de las lecturas que no pudieron ser mapeadas a su genoma de referencia, usando BLASTN remoto.</p>
+<section id="datos" class="level2">
+<h2 class="anchored" data-anchor-id="datos">Datos</h2>
+<p>Para el primer ejercicio guardamos los genomas descomprimidos y guardados en dos archivos FASTA Para el segundo ejercicio, se ejecuta el siguiente comando en Bash, asegurandonos de que estamos trabajando en la carpeta de Data Para el tercer ejercicio hay que descargarlo pinchando en el link de la práctica A veces se producen copias del mismo gen en el genoma, esas copias son entre ellas paralogos. Nosotros cuandoq ueremos utilizar secuencias de proteinas para estudiar la filogenia, utilizamos proteinas ortologas. una forma de identificarlas es, con los proteomas, con el BLAST miramos si encontramos mas de una homologia, pero si es el mejor hit reciproca, podemos considerar que son ortologas</p>
+</section>
+<section id="ejercicio-1" class="level2">
+<h2 class="anchored" data-anchor-id="ejercicio-1">Ejercicio 1</h2>
+<p>Una estrategia habitual para identificar genes ortólogos es comprobar si cada uno es, respecto del otro, su mejor resultado de BLAST. Lo que en inglés llaman reciprocal best hits. Aunque se trata de un método heurístico, los resultados son bastante fiables. Vamos a practicarlo entre dos proteomas que debes haber descargado, y que primero debemos enmascarar e indexar para BLAST.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="bu">pwd</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="bu">[</span> <span class="ot">!</span> <span class="ot">-e</span> ../../data/buchnera.paa <span class="bu">]</span><span class="kw">;</span> <span class="cf">then</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>   <span class="co"># Creamos un archivo para enmascarar zonas de baja complejidad:</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>   <span class="cf">if</span> <span class="bu">[</span> <span class="ot">!</span> <span class="ot">-e</span> buchnera_seg.asnb <span class="bu">]</span><span class="kw">;</span> <span class="cf">then</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>      <span class="ex">segmasker</span> <span class="at">-in</span> ../../data/buchnera.fasta <span class="dt">\</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>                <span class="at">-infmt</span> fasta <span class="dt">\</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>                <span class="at">-parse_seqids</span> <span class="dt">\</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>                <span class="at">-outfmt</span> maskinfo_asn1_bin <span class="dt">\</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>                <span class="at">-out</span> ../../data/buchnera_seg.asnb</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>   <span class="cf">fi</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>   <span class="co"># Y indexamos el archivo FASTA para BLAST:</span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>   <span class="ex">makeblastdb</span>  <span class="at">-in</span> ../../data/buchnera.fasta <span class="dt">\</span></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>                <span class="at">-input_type</span> fasta <span class="dt">\</span></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>                <span class="at">-dbtype</span> prot <span class="dt">\</span></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>                <span class="at">-parse_seqids</span> <span class="dt">\</span></span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>                <span class="at">-mask_data</span> ../../data/buchnera_seg.asnb <span class="dt">\</span></span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>                <span class="at">-out</span> ../../data/buchnera <span class="dt">\</span></span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>                <span class="at">-title</span> <span class="st">"Proteoma de Buchnera"</span></span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a><span class="cf">fi</span></span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a><span class="co"># Hay que repetir todo esto para Blochmannia.</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>/home/amalia/cuaderno/results/2026-03-24</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="bu">pwd</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="bu">[</span> <span class="ot">!</span> <span class="ot">-e</span> ../../data/blochmannia.paa <span class="bu">]</span><span class="kw">;</span> <span class="cf">then</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>   <span class="co"># Creamos un archivo para enmascarar zonas de baja complejidad:</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>   <span class="cf">if</span> <span class="bu">[</span> <span class="ot">!</span> <span class="ot">-e</span> blochmannia_seg.asnb <span class="bu">]</span><span class="kw">;</span> <span class="cf">then</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>      <span class="ex">segmasker</span> <span class="at">-in</span> ../../data/blochmannia.fasta <span class="dt">\</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>                <span class="at">-infmt</span> fasta <span class="dt">\</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>                <span class="at">-parse_seqids</span> <span class="dt">\</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>                <span class="at">-outfmt</span> maskinfo_asn1_bin <span class="dt">\</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>                <span class="at">-out</span> ../../data/blochmannia_seg.asnb</span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>   <span class="cf">fi</span></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>   <span class="co"># Y indexamos el archivo FASTA para BLAST:</span></span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>   <span class="ex">makeblastdb</span>  <span class="at">-in</span> ../../data/blochmannia.fasta <span class="dt">\</span></span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>                <span class="at">-input_type</span> fasta <span class="dt">\</span></span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>                <span class="at">-dbtype</span> prot <span class="dt">\</span></span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>                <span class="at">-parse_seqids</span> <span class="dt">\</span></span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>                <span class="at">-mask_data</span> ../../data/blochmannia_seg.asnb <span class="dt">\</span></span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>                <span class="at">-out</span> ../../data/blochmannia <span class="dt">\</span></span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>                <span class="at">-title</span> <span class="st">"Proteoma de Blochmannia"</span></span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a><span class="cf">fi</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>/home/amalia/cuaderno/results/2026-03-24</code></pre>
+</div>
+</div>
+<p>El objetivo es encontrar la proteína de Blochmannia ocreatus que más se parece a cada una de las proteínas de Buchnera aphidicola, y viceversa. Entonces, seleccionaremos las parejas de proteínas que sean recíprocamente las más similares una de otra, por ser más probablemente ortólogas. Otras relaciones de semejanza no recíprocas pueden ser debidas a la paralogía. Ahora hay que realizar las búsquedas de BLASTP Primero hacemos de Buchnera aphidicola hacia Blochmannia ocreatus</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="ex">blastp</span> <span class="at">-query</span> ../../data/buchnera.fasta <span class="dt">\</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>       <span class="at">-db</span> ../../data/blochmannia <span class="dt">\</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>       <span class="at">-out</span> buc2blo.txt <span class="dt">\</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>       <span class="at">-outfmt</span> <span class="st">'6 qseqid sseqid qlen slen length evalue bitscore'</span> <span class="dt">\</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>       <span class="at">-evalue</span> 0.001 <span class="dt">\</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>       <span class="at">-max_target_seqs</span> 1</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Warning: [blastp] Examining 5 or more matches is recommended</code></pre>
+</div>
+</div>
+<p>Ahora desde Blochmannia ocreatus hacia Buchnera aphidicola</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="ex">blastp</span> <span class="at">-query</span> ../../data/blochmannia.fasta <span class="dt">\</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>       <span class="at">-db</span> ../../data/buchnera <span class="dt">\</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>       <span class="at">-out</span> blo2buc.txt <span class="dt">\</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>       <span class="at">-outfmt</span> <span class="st">'6 qseqid sseqid qlen slen length evalue bitscore'</span> <span class="dt">\</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>       <span class="at">-evalue</span> 0.001 <span class="dt">\</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>       <span class="at">-max_target_seqs</span> 1</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Warning: [blastp] Examining 5 or more matches is recommended</code></pre>
+</div>
+</div>
+<p>Nos da un aviso de que es recomendado examinar 5 o mas matches, podemos consultar la ayuda de blastp -help</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="ex">blastp</span> <span class="at">-help</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>USAGE
+  blastp [-h] [-help] [-import_search_strategy filename]
+    [-export_search_strategy filename] [-task task_name] [-db database_name]
+    [-dbsize num_letters] [-gilist filename] [-seqidlist filename]
+    [-negative_gilist filename] [-negative_seqidlist filename]
+    [-taxids taxids] [-negative_taxids taxids] [-taxidlist filename]
+    [-negative_taxidlist filename] [-ipglist filename]
+    [-negative_ipglist filename] [-entrez_query entrez_query]
+    [-db_soft_mask filtering_algorithm] [-db_hard_mask filtering_algorithm]
+    [-subject subject_input_file] [-subject_loc range] [-query input_file]
+    [-out output_file] [-evalue evalue] [-word_size int_value]
+    [-gapopen open_penalty] [-gapextend extend_penalty]
+    [-qcov_hsp_perc float_value] [-max_hsps int_value]
+    [-xdrop_ungap float_value] [-xdrop_gap float_value]
+    [-xdrop_gap_final float_value] [-searchsp int_value] [-seg SEG_options]
+    [-soft_masking soft_masking] [-matrix matrix_name]
+    [-threshold float_value] [-culling_limit int_value]
+    [-best_hit_overhang float_value] [-best_hit_score_edge float_value]
+    [-subject_besthit] [-window_size int_value] [-lcase_masking]
+    [-query_loc range] [-parse_deflines] [-outfmt format] [-show_gis]
+    [-num_descriptions int_value] [-num_alignments int_value]
+    [-line_length line_length] [-html] [-sorthits sort_hits]
+    [-sorthsps sort_hsps] [-max_target_seqs num_sequences]
+    [-num_threads int_value] [-mt_mode int_value] [-ungapped] [-remote]
+    [-comp_based_stats compo] [-use_sw_tback] [-version]
+
+DESCRIPTION
+   Protein-Protein BLAST 2.12.0+
+
+OPTIONAL ARGUMENTS
+ -h
+   Print USAGE and DESCRIPTION;  ignore all other parameters
+ -help
+   Print USAGE, DESCRIPTION and ARGUMENTS; ignore all other parameters
+ -version
+   Print version number;  ignore other arguments
+
+ *** Input query options
+ -query &lt;File_In&gt;
+   Input file name
+   Default = `-'
+ -query_loc &lt;String&gt;
+   Location on the query sequence in 1-based offsets (Format: start-stop)
+
+ *** General search options
+ -task &lt;String, Permissible values: 'blastp' 'blastp-fast' 'blastp-short' &gt;
+   Task to execute
+   Default = `blastp'
+ -db &lt;String&gt;
+   BLAST database name
+    * Incompatible with:  subject, subject_loc
+ -out &lt;File_Out&gt;
+   Output file name
+   Default = `-'
+ -evalue &lt;Real&gt;
+   Expectation value (E) threshold for saving hits 
+   Default = `10'
+ -word_size &lt;Integer, &gt;=2&gt;
+   Word size for wordfinder algorithm
+ -gapopen &lt;Integer&gt;
+   Cost to open a gap
+ -gapextend &lt;Integer&gt;
+   Cost to extend a gap
+ -matrix &lt;String&gt;
+   Scoring matrix name (normally BLOSUM62)
+ -threshold &lt;Real, &gt;=0&gt;
+   Minimum word score such that the word is added to the BLAST lookup table
+ -comp_based_stats &lt;String&gt;
+   Use composition-based statistics:
+       D or d: default (equivalent to 2 )
+       0 or F or f: No composition-based statistics
+       1: Composition-based statistics as in NAR 29:2994-3005, 2001
+       2 or T or t : Composition-based score adjustment as in Bioinformatics
+   21:902-911,
+       2005, conditioned on sequence properties
+       3: Composition-based score adjustment as in Bioinformatics 21:902-911,
+       2005, unconditionally
+   Default = `2'
+
+ *** BLAST-2-Sequences options
+ -subject &lt;File_In&gt;
+   Subject sequence(s) to search
+    * Incompatible with:  db, gilist, seqidlist, negative_gilist,
+   negative_seqidlist, taxids, taxidlist, negative_taxids, negative_taxidlist,
+   ipglist, negative_ipglist, db_soft_mask, db_hard_mask
+ -subject_loc &lt;String&gt;
+   Location on the subject sequence in 1-based offsets (Format: start-stop)
+    * Incompatible with:  db, gilist, seqidlist, negative_gilist,
+   negative_seqidlist, taxids, taxidlist, negative_taxids, negative_taxidlist,
+   ipglist, negative_ipglist, db_soft_mask, db_hard_mask, remote
+
+ *** Formatting options
+ -outfmt &lt;String&gt;
+   alignment view options:
+     0 = Pairwise,
+     1 = Query-anchored showing identities,
+     2 = Query-anchored no identities,
+     3 = Flat query-anchored showing identities,
+     4 = Flat query-anchored no identities,
+     5 = BLAST XML,
+     6 = Tabular,
+     7 = Tabular with comment lines,
+     8 = Seqalign (Text ASN.1),
+     9 = Seqalign (Binary ASN.1),
+    10 = Comma-separated values,
+    11 = BLAST archive (ASN.1),
+    12 = Seqalign (JSON),
+    13 = Multiple-file BLAST JSON,
+    14 = Multiple-file BLAST XML2,
+    15 = Single-file BLAST JSON,
+    16 = Single-file BLAST XML2,
+    18 = Organism Report
+   
+   Options 6, 7 and 10 can be additionally configured to produce
+   a custom format specified by space delimited format specifiers,
+   or by a token specified by the delim keyword.
+    E.g.: "10 delim=@ qacc sacc score".
+   The delim keyword must appear after the numeric output format
+   specification.
+   The supported format specifiers are:
+        qseqid means Query Seq-id
+           qgi means Query GI
+          qacc means Query accesion
+       qaccver means Query accesion.version
+          qlen means Query sequence length
+        sseqid means Subject Seq-id
+     sallseqid means All subject Seq-id(s), separated by a ';'
+           sgi means Subject GI
+        sallgi means All subject GIs
+          sacc means Subject accession
+       saccver means Subject accession.version
+       sallacc means All subject accessions
+          slen means Subject sequence length
+        qstart means Start of alignment in query
+          qend means End of alignment in query
+        sstart means Start of alignment in subject
+          send means End of alignment in subject
+          qseq means Aligned part of query sequence
+          sseq means Aligned part of subject sequence
+        evalue means Expect value
+      bitscore means Bit score
+         score means Raw score
+        length means Alignment length
+        pident means Percentage of identical matches
+        nident means Number of identical matches
+      mismatch means Number of mismatches
+      positive means Number of positive-scoring matches
+       gapopen means Number of gap openings
+          gaps means Total number of gaps
+          ppos means Percentage of positive-scoring matches
+        frames means Query and subject frames separated by a '/'
+        qframe means Query frame
+        sframe means Subject frame
+          btop means Blast traceback operations (BTOP)
+        staxid means Subject Taxonomy ID
+      ssciname means Subject Scientific Name
+      scomname means Subject Common Name
+    sblastname means Subject Blast Name
+     sskingdom means Subject Super Kingdom
+       staxids means unique Subject Taxonomy ID(s), separated by a ';'
+             (in numerical order)
+     sscinames means unique Subject Scientific Name(s), separated by a ';'
+     scomnames means unique Subject Common Name(s), separated by a ';'
+    sblastnames means unique Subject Blast Name(s), separated by a ';'
+             (in alphabetical order)
+    sskingdoms means unique Subject Super Kingdom(s), separated by a ';'
+             (in alphabetical order) 
+        stitle means Subject Title
+    salltitles means All Subject Title(s), separated by a '&lt;&gt;'
+       sstrand means Subject Strand
+         qcovs means Query Coverage Per Subject
+       qcovhsp means Query Coverage Per HSP
+        qcovus means Query Coverage Per Unique Subject (blastn only)
+   When not provided, the default value is:
+   'qaccver saccver pident length mismatch gapopen qstart qend sstart send
+   evalue bitscore', which is equivalent to the keyword 'std'
+   Default = `0'
+ -show_gis
+   Show NCBI GIs in deflines?
+ -num_descriptions &lt;Integer, &gt;=0&gt;
+   Number of database sequences to show one-line descriptions for
+   Not applicable for outfmt &gt; 4
+   Default = `500'
+    * Incompatible with:  max_target_seqs
+ -num_alignments &lt;Integer, &gt;=0&gt;
+   Number of database sequences to show alignments for
+   Default = `250'
+    * Incompatible with:  max_target_seqs
+ -line_length &lt;Integer, &gt;=1&gt;
+   Line length for formatting alignments
+   Not applicable for outfmt &gt; 4
+   Default = `60'
+ -html
+   Produce HTML output?
+ -sorthits &lt;Integer, (&gt;=0 and =&lt;4)&gt;
+   Sorting option for hits:
+   alignment view options:
+     0 = Sort by evalue,
+     1 = Sort by bit score,
+     2 = Sort by total score,
+     3 = Sort by percent identity,
+     4 = Sort by query coverage
+   Not applicable for outfmt &gt; 4
+ -sorthsps &lt;Integer, (&gt;=0 and =&lt;4)&gt;
+   Sorting option for hps:
+     0 = Sort by hsp evalue,
+     1 = Sort by hsp score,
+     2 = Sort by hsp query start,
+     3 = Sort by hsp percent identity,
+     4 = Sort by hsp subject start
+   Not applicable for outfmt != 0
+
+ *** Query filtering options
+ -seg &lt;String&gt;
+   Filter query sequence with SEG (Format: 'yes', 'window locut hicut', or
+   'no' to disable)
+   Default = `no'
+ -soft_masking &lt;Boolean&gt;
+   Apply filtering locations as soft masks
+   Default = `false'
+ -lcase_masking
+   Use lower case filtering in query and subject sequence(s)?
+
+ *** Restrict search or results
+ -gilist &lt;String&gt;
+   Restrict search of database to list of GIs
+    * Incompatible with:  seqidlist, taxids, taxidlist, negative_gilist,
+   negative_seqidlist, negative_taxids, negative_taxidlist, remote, subject,
+   subject_loc
+ -seqidlist &lt;String&gt;
+   Restrict search of database to list of SeqIDs
+    * Incompatible with:  gilist, taxids, taxidlist, negative_gilist,
+   negative_seqidlist, negative_taxids, negative_taxidlist, remote, subject,
+   subject_loc
+ -negative_gilist &lt;String&gt;
+   Restrict search of database to everything except the specified GIs
+    * Incompatible with:  gilist, seqidlist, taxids, taxidlist,
+   negative_seqidlist, negative_taxids, negative_taxidlist, remote, subject,
+   subject_loc
+ -negative_seqidlist &lt;String&gt;
+   Restrict search of database to everything except the specified SeqIDs
+    * Incompatible with:  gilist, seqidlist, taxids, taxidlist,
+   negative_gilist, negative_taxids, negative_taxidlist, remote, subject,
+   subject_loc
+ -taxids &lt;String&gt;
+   Restrict search of database to include only the specified taxonomy IDs
+   (multiple IDs delimited by ',')
+    * Incompatible with:  gilist, seqidlist, taxidlist, negative_gilist,
+   negative_seqidlist, negative_taxids, negative_taxidlist, remote, subject,
+   subject_loc
+ -negative_taxids &lt;String&gt;
+   Restrict search of database to everything except the specified taxonomy IDs
+   (multiple IDs delimited by ',')
+    * Incompatible with:  gilist, seqidlist, taxids, taxidlist,
+   negative_gilist, negative_seqidlist, negative_taxidlist, remote, subject,
+   subject_loc
+ -taxidlist &lt;String&gt;
+   Restrict search of database to include only the specified taxonomy IDs
+    * Incompatible with:  gilist, seqidlist, taxids, negative_gilist,
+   negative_seqidlist, negative_taxids, negative_taxidlist, remote, subject,
+   subject_loc
+ -negative_taxidlist &lt;String&gt;
+   Restrict search of database to everything except the specified taxonomy IDs
+    * Incompatible with:  gilist, seqidlist, taxids, taxidlist,
+   negative_gilist, negative_seqidlist, negative_taxids, remote, subject,
+   subject_loc
+ -ipglist &lt;String&gt;
+   Restrict search of database to list of IPGs
+    * Incompatible with:  subject, subject_loc
+ -negative_ipglist &lt;String&gt;
+   Restrict search of database to everything except the specified IPGs
+    * Incompatible with:  subject, subject_loc
+ -entrez_query &lt;String&gt;
+   Restrict search with the given Entrez query
+    * Requires:  remote
+ -db_soft_mask &lt;String&gt;
+   Filtering algorithm ID to apply to the BLAST database as soft masking
+    * Incompatible with:  db_hard_mask, subject, subject_loc
+ -db_hard_mask &lt;String&gt;
+   Filtering algorithm ID to apply to the BLAST database as hard masking
+    * Incompatible with:  db_soft_mask, subject, subject_loc
+ -qcov_hsp_perc &lt;Real, 0..100&gt;
+   Percent query coverage per hsp
+ -max_hsps &lt;Integer, &gt;=1&gt;
+   Set maximum number of HSPs per subject sequence to save for each query
+ -culling_limit &lt;Integer, &gt;=0&gt;
+   If the query range of a hit is enveloped by that of at least this many
+   higher-scoring hits, delete the hit
+    * Incompatible with:  best_hit_overhang, best_hit_score_edge
+ -best_hit_overhang &lt;Real, (&gt;0 and &lt;0.5)&gt;
+   Best Hit algorithm overhang value (recommended value: 0.1)
+    * Incompatible with:  culling_limit
+ -best_hit_score_edge &lt;Real, (&gt;0 and &lt;0.5)&gt;
+   Best Hit algorithm score edge value (recommended value: 0.1)
+    * Incompatible with:  culling_limit
+ -subject_besthit
+   Turn on best hit per subject sequence
+ -max_target_seqs &lt;Integer, &gt;=1&gt;
+   Maximum number of aligned sequences to keep 
+   (value of 5 or more is recommended)
+   Default = `500'
+    * Incompatible with:  num_descriptions, num_alignments
+
+ *** Statistical options
+ -dbsize &lt;Int8&gt;
+   Effective length of the database 
+ -searchsp &lt;Int8, &gt;=0&gt;
+   Effective length of the search space
+
+ *** Search strategy options
+ -import_search_strategy &lt;File_In&gt;
+   Search strategy to use
+    * Incompatible with:  export_search_strategy
+ -export_search_strategy &lt;File_Out&gt;
+   File name to record the search strategy used
+    * Incompatible with:  import_search_strategy
+
+ *** Extension options
+ -xdrop_ungap &lt;Real&gt;
+   X-dropoff value (in bits) for ungapped extensions
+ -xdrop_gap &lt;Real&gt;
+   X-dropoff value (in bits) for preliminary gapped extensions
+ -xdrop_gap_final &lt;Real&gt;
+   X-dropoff value (in bits) for final gapped alignment
+ -window_size &lt;Integer, &gt;=0&gt;
+   Multiple hits window size, use 0 to specify 1-hit algorithm
+ -ungapped
+   Perform ungapped alignment only?
+
+ *** Miscellaneous options
+ -parse_deflines
+   Should the query and subject defline(s) be parsed?
+ -num_threads &lt;Integer, &gt;=1&gt;
+   Number of threads (CPUs) to use in the BLAST search
+   Default = `1'
+    * Incompatible with:  remote
+ -mt_mode &lt;Integer, (&gt;=0 and =&lt;1)&gt;
+   Multi-thread mode to use in BLAST search:
+    0 (auto) split by database 
+    1 split by queries
+   Default = `0'
+    * Requires:  num_threads
+ -remote
+   Execute search remotely?
+    * Incompatible with:  gilist, seqidlist, taxids, taxidlist,
+   negative_gilist, negative_seqidlist, negative_taxids, negative_taxidlist,
+   subject_loc, num_threads
+ -use_sw_tback
+   Compute locally optimal Smith-Waterman alignments?</code></pre>
+</div>
+</div>
+<p>Comparación de resultados</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>buc2blo <span class="ot">&lt;-</span> <span class="fu">read.table</span>(</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>   <span class="st">'buc2blo.txt'</span>,</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>   <span class="at">col.names =</span> <span class="fu">c</span>(<span class="st">'query'</span>, <span class="st">'subject'</span>, <span class="st">'qlen'</span>, <span class="st">'slen'</span>,</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>                 <span class="st">'length'</span>, <span class="st">'evalue'</span>, <span class="st">'bitscore'</span>)</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>blo2buc <span class="ot">&lt;-</span> <span class="fu">read.table</span>(</span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>   <span class="st">'blo2buc.txt'</span>,</span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>   <span class="at">col.names =</span> <span class="fu">c</span>(<span class="st">'query'</span>, <span class="st">'subject'</span>, <span class="st">'qlen'</span>, <span class="st">'slen'</span>,</span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>                 <span class="st">'length'</span>, <span class="st">'evalue'</span>, <span class="st">'bitscore'</span>)</span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>buc2blo: cual es la proteina de blo mas parecida a cada una de buc</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>buc2blo<span class="sc">$</span>reverse <span class="ot">&lt;-</span> blo2buc[</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>   <span class="fu">match</span>(buc2blo<span class="sc">$</span>subject, blo2buc<span class="sc">$</span>query),</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>   <span class="st">'subject'</span></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>]</span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>coincidencias <span class="ot">&lt;-</span> buc2blo[</span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>   buc2blo<span class="sc">$</span>query <span class="sc">==</span> buc2blo<span class="sc">$</span>reverse,</span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>   <span class="fu">c</span>(<span class="st">'query'</span>, <span class="st">'subject'</span>)</span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>añade una columna a la tabla que la llama reverse, el truco es utilizar la funcion mathc para encontrar de la primera tabla la proteina de bloc en la segunda tabla ## Ejercicio 2. PSI-BLAST El PSI-BLAST nos permite identificar semejanzas sutiles, como las que existen entre miembros alejados de una superfamilia proteica. Para comprobarlo vamos a realizar una búsqueda a partir de cualquiera de las proteínas siguientes: Q9CC91, P39615, B1AJI8, P47343, Q5UPT2, Q6UDG6, A1AFY9, O59825 y P30314. Todas ellas están en Swissprot y pertenecen a una misma superfamilia. Sin embargo, un simple BLASTP con cualquiera de ellas no encuentra ninguna de las otras1. Comprobemos si con un PSI-BLAST lo conseguimos. A continuación lo intento a partir de P39615. Repite los pasos usando otra proteína de la lista como query y compara los resultados.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Como Swissprot debería estar ya descargada en `../../data`, podemos sacar</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="co"># de ahí la secuencia de la proteína escogida:</span></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a><span class="ex">blastdbcmd</span> <span class="at">-db</span> ../../data/swissprot <span class="at">-entry</span> P39615 <span class="at">-out</span> P39615.fa</span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Y ahora la usamos como query en psi-blast:</span></span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a><span class="ex">psiblast</span> <span class="at">-db</span> ../../data/swissprot <span class="dt">\</span></span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>         <span class="at">-query</span> P39615.fa <span class="dt">\</span></span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>         <span class="at">-out</span> P39615.blastout.txt <span class="dt">\</span></span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a>         <span class="at">-evalue</span> 0.1 <span class="dt">\</span></span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a>         <span class="at">-outfmt</span> 7 <span class="dt">\</span></span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a>         <span class="at">-inclusion_ethresh</span> 0.001 <span class="dt">\</span></span>
+<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a>         <span class="at">-num_iterations</span> 7 <span class="dt">\</span></span>
+<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a>         <span class="at">-matrix</span> BLOSUM62</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Warning: [psiblast] Query_1 P39615.1 RecName:.. : Composition-based score adjustment conditioned on sequence properties and unconditional composition-based score adjustment is not supported with PSSMs, resetting to default value of standard composition-based statistics </code></pre>
+</div>
+</div>
+<p>Ahora probamos con otra proteina como query, por ejemplo, con B1AJI8</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Como Swissprot debería estar ya descargada en `../../data`, podemos sacar</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="co"># de ahí la secuencia de la proteína escogida:</span></span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a><span class="ex">blastdbcmd</span> <span class="at">-db</span> ../../data/swissprot <span class="at">-entry</span> B1AJI8 <span class="at">-out</span> B1AJI8.fa</span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Y ahora la usamos como query en psi-blast:</span></span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a><span class="ex">psiblast</span> <span class="at">-db</span> ../../data/swissprot <span class="dt">\</span></span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>         <span class="at">-query</span> B1AJI8.fa <span class="dt">\</span></span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a>         <span class="at">-out</span> B1AJI8.blastout.txt <span class="dt">\</span></span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a>         <span class="at">-evalue</span> 0.1 <span class="dt">\</span></span>
+<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a>         <span class="at">-outfmt</span> 7 <span class="dt">\</span></span>
+<span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a>         <span class="at">-inclusion_ethresh</span> 0.001 <span class="dt">\</span></span>
+<span id="cb15-12"><a href="#cb15-12" aria-hidden="true" tabindex="-1"></a>         <span class="at">-num_iterations</span> 7 <span class="dt">\</span></span>
+<span id="cb15-13"><a href="#cb15-13" aria-hidden="true" tabindex="-1"></a>         <span class="at">-matrix</span> BLOSUM62</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Warning: [psiblast] Query_1 B1AJI8.1 RecName:.. : Composition-based score adjustment conditioned on sequence properties and unconditional composition-based score adjustment is not supported with PSSMs, resetting to default value of standard composition-based statistics </code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="ex">psiblast</span> <span class="at">-help</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>USAGE
+  psiblast [-h] [-help] [-import_search_strategy filename]
+    [-export_search_strategy filename] [-db database_name]
+    [-dbsize num_letters] [-gilist filename] [-seqidlist filename]
+    [-negative_gilist filename] [-negative_seqidlist filename]
+    [-taxids taxids] [-negative_taxids taxids] [-taxidlist filename]
+    [-negative_taxidlist filename] [-ipglist filename]
+    [-negative_ipglist filename] [-entrez_query entrez_query]
+    [-subject subject_input_file] [-subject_loc range] [-query input_file]
+    [-out output_file] [-evalue evalue] [-word_size int_value]
+    [-gapopen open_penalty] [-gapextend extend_penalty]
+    [-qcov_hsp_perc float_value] [-max_hsps int_value]
+    [-xdrop_ungap float_value] [-xdrop_gap float_value]
+    [-xdrop_gap_final float_value] [-searchsp int_value]
+    [-sum_stats bool_value] [-seg SEG_options] [-soft_masking soft_masking]
+    [-matrix matrix_name] [-threshold float_value] [-culling_limit int_value]
+    [-best_hit_overhang float_value] [-best_hit_score_edge float_value]
+    [-subject_besthit] [-window_size int_value] [-lcase_masking]
+    [-query_loc range] [-parse_deflines] [-outfmt format] [-show_gis]
+    [-num_descriptions int_value] [-num_alignments int_value]
+    [-line_length line_length] [-html] [-sorthits sort_hits]
+    [-sorthsps sort_hsps] [-max_target_seqs num_sequences]
+    [-num_threads int_value] [-remote] [-comp_based_stats compo]
+    [-use_sw_tback] [-gap_trigger float_value] [-num_iterations int_value]
+    [-out_pssm checkpoint_file] [-out_ascii_pssm ascii_mtx_file]
+    [-save_pssm_after_last_round] [-save_each_pssm] [-in_msa align_restart]
+    [-msa_master_idx index] [-ignore_msa_master] [-in_pssm psi_chkpt_file]
+    [-pseudocount pseudocount] [-inclusion_ethresh ethresh]
+    [-phi_pattern file] [-version]
+
+DESCRIPTION
+   Position-Specific Iterated BLAST 2.12.0+
+
+OPTIONAL ARGUMENTS
+ -h
+   Print USAGE and DESCRIPTION;  ignore all other parameters
+ -help
+   Print USAGE, DESCRIPTION and ARGUMENTS; ignore all other parameters
+ -version
+   Print version number;  ignore other arguments
+
+ *** Input query options
+ -query &lt;File_In&gt;
+   Input file name
+   Default = `-'
+    * Incompatible with:  in_msa, msa_master_idx, ignore_msa_master, in_pssm
+ -query_loc &lt;String&gt;
+   Location on the query sequence in 1-based offsets (Format: start-stop)
+    * Incompatible with:  in_msa, msa_master_idx, ignore_msa_master, in_pssm
+
+ *** General search options
+ -db &lt;String&gt;
+   BLAST database name
+    * Incompatible with:  subject, subject_loc
+ -out &lt;File_Out&gt;
+   Output file name
+   Default = `-'
+ -evalue &lt;Real&gt;
+   Expectation value (E) threshold for saving hits 
+   Default = `10'
+ -word_size &lt;Integer, &gt;=2&gt;
+   Word size for wordfinder algorithm
+ -gapopen &lt;Integer&gt;
+   Cost to open a gap
+ -gapextend &lt;Integer&gt;
+   Cost to extend a gap
+ -matrix &lt;String&gt;
+   Scoring matrix name (normally BLOSUM62)
+ -threshold &lt;Real, &gt;=0&gt;
+   Minimum word score such that the word is added to the BLAST lookup table
+ -comp_based_stats &lt;String&gt;
+   Use composition-based statistics:
+       D or d: default (equivalent to 2 )
+       0 or F or f: No composition-based statistics
+       1: Composition-based statistics as in NAR 29:2994-3005, 2001
+       2 or T or t : Composition-based score adjustment as in Bioinformatics
+   21:902-911,
+       2005, conditioned on sequence properties
+       3: Composition-based score adjustment as in Bioinformatics 21:902-911,
+       2005, unconditionally
+   Default = `2'
+
+ *** BLAST-2-Sequences options
+ -subject &lt;File_In&gt;
+   Subject sequence(s) to search
+    * Incompatible with:  db, gilist, seqidlist, negative_gilist,
+   negative_seqidlist, taxids, taxidlist, negative_taxids, negative_taxidlist,
+   ipglist, negative_ipglist
+ -subject_loc &lt;String&gt;
+   Location on the subject sequence in 1-based offsets (Format: start-stop)
+    * Incompatible with:  db, gilist, seqidlist, negative_gilist,
+   negative_seqidlist, taxids, taxidlist, negative_taxids, negative_taxidlist,
+   ipglist, negative_ipglist, remote
+
+ *** Formatting options
+ -outfmt &lt;String&gt;
+   alignment view options:
+     0 = Pairwise,
+     1 = Query-anchored showing identities,
+     2 = Query-anchored no identities,
+     3 = Flat query-anchored showing identities,
+     4 = Flat query-anchored no identities,
+     5 = BLAST XML,
+     6 = Tabular,
+     7 = Tabular with comment lines,
+     8 = Seqalign (Text ASN.1),
+     9 = Seqalign (Binary ASN.1),
+    10 = Comma-separated values,
+    11 = BLAST archive (ASN.1),
+    12 = Seqalign (JSON),
+    13 = Multiple-file BLAST JSON,
+    14 = Multiple-file BLAST XML2,
+    15 = Single-file BLAST JSON,
+    16 = Single-file BLAST XML2,
+    18 = Organism Report
+   
+   Options 6, 7 and 10 can be additionally configured to produce
+   a custom format specified by space delimited format specifiers,
+   or by a token specified by the delim keyword.
+    E.g.: "10 delim=@ qacc sacc score".
+   The delim keyword must appear after the numeric output format
+   specification.
+   The supported format specifiers are:
+        qseqid means Query Seq-id
+           qgi means Query GI
+          qacc means Query accesion
+       qaccver means Query accesion.version
+          qlen means Query sequence length
+        sseqid means Subject Seq-id
+     sallseqid means All subject Seq-id(s), separated by a ';'
+           sgi means Subject GI
+        sallgi means All subject GIs
+          sacc means Subject accession
+       saccver means Subject accession.version
+       sallacc means All subject accessions
+          slen means Subject sequence length
+        qstart means Start of alignment in query
+          qend means End of alignment in query
+        sstart means Start of alignment in subject
+          send means End of alignment in subject
+          qseq means Aligned part of query sequence
+          sseq means Aligned part of subject sequence
+        evalue means Expect value
+      bitscore means Bit score
+         score means Raw score
+        length means Alignment length
+        pident means Percentage of identical matches
+        nident means Number of identical matches
+      mismatch means Number of mismatches
+      positive means Number of positive-scoring matches
+       gapopen means Number of gap openings
+          gaps means Total number of gaps
+          ppos means Percentage of positive-scoring matches
+        frames means Query and subject frames separated by a '/'
+        qframe means Query frame
+        sframe means Subject frame
+          btop means Blast traceback operations (BTOP)
+        staxid means Subject Taxonomy ID
+      ssciname means Subject Scientific Name
+      scomname means Subject Common Name
+    sblastname means Subject Blast Name
+     sskingdom means Subject Super Kingdom
+       staxids means unique Subject Taxonomy ID(s), separated by a ';'
+             (in numerical order)
+     sscinames means unique Subject Scientific Name(s), separated by a ';'
+     scomnames means unique Subject Common Name(s), separated by a ';'
+    sblastnames means unique Subject Blast Name(s), separated by a ';'
+             (in alphabetical order)
+    sskingdoms means unique Subject Super Kingdom(s), separated by a ';'
+             (in alphabetical order) 
+        stitle means Subject Title
+    salltitles means All Subject Title(s), separated by a '&lt;&gt;'
+       sstrand means Subject Strand
+         qcovs means Query Coverage Per Subject
+       qcovhsp means Query Coverage Per HSP
+        qcovus means Query Coverage Per Unique Subject (blastn only)
+   When not provided, the default value is:
+   'qaccver saccver pident length mismatch gapopen qstart qend sstart send
+   evalue bitscore', which is equivalent to the keyword 'std'
+   Default = `0'
+ -show_gis
+   Show NCBI GIs in deflines?
+ -num_descriptions &lt;Integer, &gt;=0&gt;
+   Number of database sequences to show one-line descriptions for
+   Not applicable for outfmt &gt; 4
+   Default = `500'
+    * Incompatible with:  max_target_seqs
+ -num_alignments &lt;Integer, &gt;=0&gt;
+   Number of database sequences to show alignments for
+   Default = `250'
+    * Incompatible with:  max_target_seqs
+ -line_length &lt;Integer, &gt;=1&gt;
+   Line length for formatting alignments
+   Not applicable for outfmt &gt; 4
+   Default = `60'
+ -html
+   Produce HTML output?
+ -sorthits &lt;Integer, (&gt;=0 and =&lt;4)&gt;
+   Sorting option for hits:
+   alignment view options:
+     0 = Sort by evalue,
+     1 = Sort by bit score,
+     2 = Sort by total score,
+     3 = Sort by percent identity,
+     4 = Sort by query coverage
+   Not applicable for outfmt &gt; 4
+ -sorthsps &lt;Integer, (&gt;=0 and =&lt;4)&gt;
+   Sorting option for hps:
+     0 = Sort by hsp evalue,
+     1 = Sort by hsp score,
+     2 = Sort by hsp query start,
+     3 = Sort by hsp percent identity,
+     4 = Sort by hsp subject start
+   Not applicable for outfmt != 0
+
+ *** Query filtering options
+ -seg &lt;String&gt;
+   Filter query sequence with SEG (Format: 'yes', 'window locut hicut', or
+   'no' to disable)
+   Default = `no'
+ -soft_masking &lt;Boolean&gt;
+   Apply filtering locations as soft masks
+   Default = `false'
+ -lcase_masking
+   Use lower case filtering in query and subject sequence(s)?
+
+ *** Restrict search or results
+ -gilist &lt;String&gt;
+   Restrict search of database to list of GIs
+    * Incompatible with:  seqidlist, taxids, taxidlist, negative_gilist,
+   negative_seqidlist, negative_taxids, negative_taxidlist, remote, subject,
+   subject_loc
+ -seqidlist &lt;String&gt;
+   Restrict search of database to list of SeqIDs
+    * Incompatible with:  gilist, taxids, taxidlist, negative_gilist,
+   negative_seqidlist, negative_taxids, negative_taxidlist, remote, subject,
+   subject_loc
+ -negative_gilist &lt;String&gt;
+   Restrict search of database to everything except the specified GIs
+    * Incompatible with:  gilist, seqidlist, taxids, taxidlist,
+   negative_seqidlist, negative_taxids, negative_taxidlist, remote, subject,
+   subject_loc
+ -negative_seqidlist &lt;String&gt;
+   Restrict search of database to everything except the specified SeqIDs
+    * Incompatible with:  gilist, seqidlist, taxids, taxidlist,
+   negative_gilist, negative_taxids, negative_taxidlist, remote, subject,
+   subject_loc
+ -taxids &lt;String&gt;
+   Restrict search of database to include only the specified taxonomy IDs
+   (multiple IDs delimited by ',')
+    * Incompatible with:  gilist, seqidlist, taxidlist, negative_gilist,
+   negative_seqidlist, negative_taxids, negative_taxidlist, remote, subject,
+   subject_loc
+ -negative_taxids &lt;String&gt;
+   Restrict search of database to everything except the specified taxonomy IDs
+   (multiple IDs delimited by ',')
+    * Incompatible with:  gilist, seqidlist, taxids, taxidlist,
+   negative_gilist, negative_seqidlist, negative_taxidlist, remote, subject,
+   subject_loc
+ -taxidlist &lt;String&gt;
+   Restrict search of database to include only the specified taxonomy IDs
+    * Incompatible with:  gilist, seqidlist, taxids, negative_gilist,
+   negative_seqidlist, negative_taxids, negative_taxidlist, remote, subject,
+   subject_loc
+ -negative_taxidlist &lt;String&gt;
+   Restrict search of database to everything except the specified taxonomy IDs
+    * Incompatible with:  gilist, seqidlist, taxids, taxidlist,
+   negative_gilist, negative_seqidlist, negative_taxids, remote, subject,
+   subject_loc
+ -ipglist &lt;String&gt;
+   Restrict search of database to list of IPGs
+    * Incompatible with:  subject, subject_loc
+ -negative_ipglist &lt;String&gt;
+   Restrict search of database to everything except the specified IPGs
+    * Incompatible with:  subject, subject_loc
+ -entrez_query &lt;String&gt;
+   Restrict search with the given Entrez query
+    * Requires:  remote
+ -qcov_hsp_perc &lt;Real, 0..100&gt;
+   Percent query coverage per hsp
+ -max_hsps &lt;Integer, &gt;=1&gt;
+   Set maximum number of HSPs per subject sequence to save for each query
+ -culling_limit &lt;Integer, &gt;=0&gt;
+   If the query range of a hit is enveloped by that of at least this many
+   higher-scoring hits, delete the hit
+    * Incompatible with:  best_hit_overhang, best_hit_score_edge
+ -best_hit_overhang &lt;Real, (&gt;0 and &lt;0.5)&gt;
+   Best Hit algorithm overhang value (recommended value: 0.1)
+    * Incompatible with:  culling_limit
+ -best_hit_score_edge &lt;Real, (&gt;0 and &lt;0.5)&gt;
+   Best Hit algorithm score edge value (recommended value: 0.1)
+    * Incompatible with:  culling_limit
+ -subject_besthit
+   Turn on best hit per subject sequence
+ -max_target_seqs &lt;Integer, &gt;=1&gt;
+   Maximum number of aligned sequences to keep 
+   (value of 5 or more is recommended)
+   Default = `500'
+    * Incompatible with:  num_descriptions, num_alignments
+
+ *** Statistical options
+ -dbsize &lt;Int8&gt;
+   Effective length of the database 
+ -searchsp &lt;Int8, &gt;=0&gt;
+   Effective length of the search space
+ -sum_stats &lt;Boolean&gt;
+   Use sum statistics
+
+ *** Search strategy options
+ -import_search_strategy &lt;File_In&gt;
+   Search strategy to use
+    * Incompatible with:  export_search_strategy
+ -export_search_strategy &lt;File_Out&gt;
+   File name to record the search strategy used
+    * Incompatible with:  import_search_strategy
+
+ *** Extension options
+ -xdrop_ungap &lt;Real&gt;
+   X-dropoff value (in bits) for ungapped extensions
+ -xdrop_gap &lt;Real&gt;
+   X-dropoff value (in bits) for preliminary gapped extensions
+ -xdrop_gap_final &lt;Real&gt;
+   X-dropoff value (in bits) for final gapped alignment
+ -window_size &lt;Integer, &gt;=0&gt;
+   Multiple hits window size, use 0 to specify 1-hit algorithm
+ -gap_trigger &lt;Real&gt;
+   Number of bits to trigger gapping
+   Default = `22'
+
+ *** Miscellaneous options
+ -parse_deflines
+   Should the query and subject defline(s) be parsed?
+ -num_threads &lt;Integer, &gt;=1&gt;
+   Number of threads (CPUs) to use in the BLAST search
+   Default = `1'
+    * Incompatible with:  remote
+ -remote
+   Execute search remotely?
+    * Incompatible with:  gilist, seqidlist, taxids, taxidlist,
+   negative_gilist, negative_seqidlist, negative_taxids, negative_taxidlist,
+   subject_loc, num_threads, num_iterations
+ -use_sw_tback
+   Compute locally optimal Smith-Waterman alignments?
+
+ *** PSI-BLAST options
+ -num_iterations &lt;Integer, &gt;=0&gt;
+   Number of iterations to perform (0 means run until convergence)
+   Default = `1'
+    * Incompatible with:  remote
+ -out_pssm &lt;File_Out&gt;
+   File name to store checkpoint file
+ -out_ascii_pssm &lt;File_Out&gt;
+   File name to store ASCII version of PSSM
+ -save_pssm_after_last_round
+   Save PSSM after the last database search
+ -save_each_pssm
+   Save PSSM after each iteration (file name is given in -save_pssm or
+   -save_ascii_pssm options)
+
+ *** PSSM engine options
+ -in_msa &lt;File_In&gt;
+   File name of multiple sequence alignment to restart PSI-BLAST
+    * Incompatible with:  in_pssm, query, query_loc, phi_pattern
+ -msa_master_idx &lt;Integer, &gt;=1&gt;
+   Ordinal number (1-based index) of the sequence to use as a master in the
+   multiple sequence alignment. If not provided, the first sequence in the
+   multiple sequence alignment will be used
+    * Requires:  in_msa
+    * Incompatible with:  in_pssm, query, query_loc, phi_pattern,
+   ignore_msa_master
+ -ignore_msa_master
+   Ignore the master sequence when creating PSSM
+    * Requires:  in_msa
+    * Incompatible with:  msa_master_idx, in_pssm, query, query_loc,
+   phi_pattern
+ -in_pssm &lt;File_In&gt;
+   PSI-BLAST checkpoint file
+    * Incompatible with:  in_msa, msa_master_idx, ignore_msa_master, query,
+   query_loc, phi_pattern
+ -pseudocount &lt;Integer&gt;
+   Pseudo-count value used when constructing PSSM
+   Default = `0'
+ -inclusion_ethresh &lt;Real&gt;
+   E-value inclusion threshold for pairwise alignments
+   Default = `0.002'
+
+ *** PHI-BLAST options
+ -phi_pattern &lt;File_In&gt;
+   File name containing pattern to search
+    * Incompatible with:  in_msa, msa_master_idx, ignore_msa_master, in_pssm</code></pre>
+</div>
+</div>
+<p>Evalue es el numero esperado de alineamientos con una puntuacion. Inclusion_ethresh define el valor umbral de evalor. Para hacer la busqueda mas sensible se repite el psiblasta hasta llegar a la convergencia</p>
+</section>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const onCopySuccess = function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
+  });
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp('/' + window.location.host + '/');
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

@@ -3,20 +3,21 @@ title: "Practica8"
 format: html
 editor: visual
 ---
-#Hay que tener instalado el paquete Biostrings, primero hay que comprobar que tenemos instalado el paquete BiocManager
-install.packages('BiocManager')
-BiocManager::install('Biostrings')
-##Los objetivos de esta practica son:Identificar proteínas ortólogas entre dos especies con BLASTP.
-#Realizar un PSI-BLAST contra la base de datos Swissprot.
-#Determinar el origen de las lecturas que no pudieron ser mapeadas a su genoma de referencia, usando BLASTN remoto.
 
-#Datos:
-#Para el primer ejercicio guardamos los genomas descomprimidos y guardados en dos archivos FASTA
-#Para el segundo ejercicio, se ejecuta el siguiente comando en Bash, asegurandonos de que estamos trabajando en la carpeta de Data
-#Para el tercer ejercicio hay que descargarlo pinchando en el link de la práctica
-#A veces se producen copias del mismo gen en el genoma, esas copias son entre ellas paralogos. Nosotros cuandoq ueremos utilizar secuencias de proteinas para estudiar la filogenia, utilizamos proteinas ortologas. una forma de identificarlas es, con los proteomas, con el BLAST miramos si encontramos mas de una homologia, pero si es el mejor hit reciproca, podemos considerar que son ortologas
+Hay que tener instalado el paquete Biostrings, primero hay que comprobar que tenemos instalado el paquete BiocManager install.packages('BiocManager') BiocManager::install('Biostrings') 
+Los **objetivos** de esta practica son:
+Identificar proteínas ortólogas entre dos especies con BLASTP. 
+Realizar un PSI-BLAST contra la base de datos Swissprot. 
+Determinar el origen de las lecturas que no pudieron ser mapeadas a su genoma de referencia, usando BLASTN remoto.
 
-#Ejercicio 1
+## Datos 
+Para el primer ejercicio guardamos los genomas descomprimidos y guardados en dos archivos FASTA 
+Para el segundo ejercicio, se ejecuta el siguiente comando en Bash, asegurandonos de que estamos trabajando en la carpeta de Data 
+Para el tercer ejercicio hay que descargarlo pinchando en el link de la práctica 
+A veces se producen copias del mismo gen en el genoma, esas copias son entre ellas paralogos. Nosotros cuandoq ueremos utilizar secuencias de proteinas para estudiar la filogenia, utilizamos proteinas ortologas. una forma de identificarlas es, con los proteomas, con el BLAST miramos si encontramos mas de una homologia, pero si es el mejor hit reciproca, podemos considerar que son ortologas
+
+## Ejercicio 1
+Una estrategia habitual para identificar genes ortólogos es comprobar si cada uno es, respecto del otro, su mejor resultado de BLAST. Lo que en inglés llaman reciprocal best hits. Aunque se trata de un método heurístico, los resultados son bastante fiables. Vamos a practicarlo entre dos proteomas que debes haber descargado, y que primero debemos enmascarar e indexar para BLAST.
 ```{bash}
 pwd
 if [ ! -e ../../data/buchnera.paa ]; then
@@ -39,6 +40,8 @@ if [ ! -e ../../data/buchnera.paa ]; then
 fi
 # Hay que repetir todo esto para Blochmannia.
 ```
+
+
 ```{bash}
 pwd
 if [ ! -e ../../data/blochmannia.paa ]; then
@@ -61,8 +64,10 @@ if [ ! -e ../../data/blochmannia.paa ]; then
 fi
 
 ```
-#Ahora hay que realizar las búsquedas de BLASTP
-#Primero hacemos de Buchnera aphidicola hacia Blochmannia ocreatus
+El objetivo es encontrar la proteína de Blochmannia ocreatus que más se parece a cada una de las proteínas de Buchnera aphidicola, y viceversa. Entonces, seleccionaremos las parejas de proteínas que sean recíprocamente las más similares una de otra, por ser más probablemente ortólogas. Otras relaciones de semejanza no recíprocas pueden ser debidas a la paralogía.
+Ahora hay que realizar las búsquedas de BLASTP 
+Primero hacemos de Buchnera aphidicola hacia Blochmannia ocreatus
+
 ```{bash}
 blastp -query ../../data/buchnera.fasta \
        -db ../../data/blochmannia \
@@ -71,7 +76,9 @@ blastp -query ../../data/buchnera.fasta \
        -evalue 0.001 \
        -max_target_seqs 1
 ```
-#Ahora desde Blochmannia ocreatus hacia Buchnera aphidicola
+
+Ahora desde Blochmannia ocreatus hacia Buchnera aphidicola
+
 ```{bash}
 blastp -query ../../data/blochmannia.fasta \
        -db ../../data/buchnera \
@@ -80,11 +87,15 @@ blastp -query ../../data/blochmannia.fasta \
        -evalue 0.001 \
        -max_target_seqs 1
 ```
-#Nos da un aviso de que es recomendado examinar 5 o mas matches, podemos consultar la ayuda de blastp -help
+
+Nos da un aviso de que es recomendado examinar 5 o mas matches, podemos consultar la ayuda de blastp -help
+
 ```{bash}
 blastp -help
 ```
-#Comparación de resultados
+
+Comparación de resultados
+
 ```{r}
 buc2blo <- read.table(
    'buc2blo.txt',
@@ -97,7 +108,9 @@ blo2buc <- read.table(
                  'length', 'evalue', 'bitscore')
 )
 ```
-# buc2blo: cual es la proteina de blo mas parecida a cada una de buc 
+
+buc2blo: cual es la proteina de blo mas parecida a cada una de buc
+
 ```{r}
 buc2blo$reverse <- blo2buc[
    match(buc2blo$subject, blo2buc$query),
@@ -108,8 +121,10 @@ coincidencias <- buc2blo[
    c('query', 'subject')
 ]
 ```
-#añade una columna a la tabla que la llama reverse, el truco es utilizar la funcion mathc para encontrar de la primera tabla la proteina de bloc en la segunda tabla
-#Ejercicio 2. PSI-BLAST
+
+añade una columna a la tabla que la llama reverse, el truco es utilizar la funcion mathc para encontrar de la primera tabla la proteina de bloc en la segunda tabla 
+## Ejercicio 2. PSI-BLAST
+El PSI-BLAST nos permite identificar semejanzas sutiles, como las que existen entre miembros alejados de una superfamilia proteica. Para comprobarlo vamos a realizar una búsqueda a partir de cualquiera de las proteínas siguientes: Q9CC91, P39615, B1AJI8, P47343, Q5UPT2, Q6UDG6, A1AFY9, O59825 y P30314. Todas ellas están en Swissprot y pertenecen a una misma superfamilia. Sin embargo, un simple BLASTP con cualquiera de ellas no encuentra ninguna de las otras1. Comprobemos si con un PSI-BLAST lo conseguimos. A continuación lo intento a partir de P39615. Repite los pasos usando otra proteína de la lista como query y compara los resultados.
 ```{bash}
 # Como Swissprot debería estar ya descargada en `../../data`, podemos sacar
 # de ahí la secuencia de la proteína escogida:
@@ -125,7 +140,9 @@ psiblast -db ../../data/swissprot \
          -num_iterations 7 \
          -matrix BLOSUM62
 ```
-#Ahora probamos con otra proteina como query, por ejemplo, con B1AJI8
+
+Ahora probamos con otra proteina como query, por ejemplo, con B1AJI8
+
 ```{bash}
 # Como Swissprot debería estar ya descargada en `../../data`, podemos sacar
 # de ahí la secuencia de la proteína escogida:
@@ -141,11 +158,10 @@ psiblast -db ../../data/swissprot \
          -num_iterations 7 \
          -matrix BLOSUM62
 ```
+
 ```{bash}
 psiblast -help
 ```
-#Evalue es el numero esperado de alineamientos con una puntuacion 
-#inclusion_ethresh define el valor umbral de evalor #para hacer la busqueda mas sensible se repite el psiblasta hasta llegar a la convergencia
 
-
-
+Evalue es el numero esperado de alineamientos con una puntuacion. Inclusion_ethresh define el valor umbral de evalor. 
+Para hacer la busqueda mas sensible se repite el psiblasta hasta llegar a la convergencia
