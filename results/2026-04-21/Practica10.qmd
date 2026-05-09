@@ -14,12 +14,12 @@ Hay que descargar el archivo At4.10.fa.gz en la carpeta data
 Los datos están en formato FASTA porque contienen sólo lecturas de alta calidad, y hifiasm no utiliza la información de las calidades de cada base. El archivo está comprimido. Antes de empezar el ensamblaje deberíamos tener una idea de la cantidad de datos que tenemos. Si lo necesitas, utiliza una inteligencia artificial para responder las preguntas siguientes y anota en un bloque de código las órdenes utilizadas. Puedes hacerlo con instrucciones de Bash o de R, pero R necesitará cargar en memoria el archivo entero, lo que no sería muy práctico si se tratara de un archivo 10 o 50 veces mayor.
 
 ## Ejercicio 1
-¿Cuántas secuencias contiene el archivo?
+**¿Cuántas secuencias contiene el archivo?**
 ```{bash}
 zcat ../../data/At4.10.fa.gz | grep -c "^>"
 ```
 En un archivo fasta cada secuencia viene precedida por un >, por lo que si contamos cuantos simbolos > hay, podemos saber el numero de secuencias. Con el comando zcat podemos leer el archivo comprimido sin descomprimirlo en el disco. El resultado da 13812
-¿Qué longitudes mínima, media y máxima tienen las secuencias? ¿Cuál es el número total de bases?
+**¿Qué longitudes mínima, media y máxima tienen las secuencias? ¿Cuál es el número total de bases?**
 ```{bash}
 zcat ../../data/At4.10.fa.gz | awk '
 /^>/ {
@@ -54,7 +54,7 @@ Ahora utiliza un script de awk, que esta diseñado para leer un archivo de texto
 La longitud minima es 2942, la maxima es 59075 y la media 18143.6
 El número total de bases es 250599484
 
-Si se estimara que el genoma a ensamblar fuera de sólo 19 millones de bases, ¿cuál sería la cobertura esperada?
+**Si se estimara que el genoma a ensamblar fuera de sólo 19 millones de bases, ¿cuál sería la cobertura esperada?**
 Como ya sabemos el número total de bases:
 ```{bash}
 echo "scale=2; 250599484/19000000" | bc
@@ -86,17 +86,17 @@ Las opciones significan lo siguiente:
 para ejecutar hifiasm podemos añadir antes del bloque HF=~/bin/hifiasm/hifiasm o export PATH=~/bin/hifiasm/hifiasm :$PATH
 
 ## Ejercicio 2
-#Consulta la ayuda de hifiasm (hifiasm -h) y contesta las preguntas siguientes:
+Consulta la ayuda de hifiasm (hifiasm -h) y contesta las preguntas siguientes:
 ```{bash}
 HF=~/bin/hifiasm/hifiasm
 
 $HF -h
 ```
 
-¿Los parámetros corresponden al ensamblaje de un genoma haploide o diploide?
+**¿Los parámetros corresponden al ensamblaje de un genoma haploide o diploide?**
 En la carpeta asm1 hay hap1 y hap2, que corresponde con los contigs del haplotipo 1 y del haplotipo 2, por lo que corresponde al ensamblaje de un genoma diploide
 
-¿Qué nivel de eliminación de duplicaciones hemos aplicado? (El paso de eliminar duplicaciones sirve para que las zonas de alta heterocigosidad no sean ensambladas como contigs diferentes).
+**¿Qué nivel de eliminación de duplicaciones hemos aplicado? (El paso de eliminar duplicaciones sirve para que las zonas de alta heterocigosidad no sean ensambladas como contigs diferentes).**
 
 ```{bash}
 find . -name "hifiasm.log"
@@ -106,23 +106,31 @@ grep -i "purge" ./asm1/hifiasm.log
 ```
 Como no esta especificado nada, esta aplicando el nivel 3 de eliminacion de duplicaciones
 
-Si tuvieramos lecturas ultra-largas, ¿con qué opción o argumento añadiríamos esa información?
+**Si tuvieramos lecturas ultra-largas, ¿con qué opción o argumento añadiríamos esa información?**
 Hay que utilizar el argumento --ul
 
 ## Evaluación del resultado
-Ejercicio 3
+## Ejercicio 3
 Consulta la descripción de los archivos de salida que encontrarás en este enlace y contesta las preguntas siguientes:
 
-¿Dónde están las secuencias que componen el ensamblaje?
+**¿Dónde están las secuencias que componen el ensamblaje?**
 En los GFA, en todos menos en los noseq.gfa, que son sin secuencias
 
-En los archivos .gfa, ¿qué son las líneas que empiezan por ‘A’?
+**En los archivos .gfa, ¿qué son las líneas que empiezan por ‘A’?**
 Incluye la información de las lecturas que se han usado para construir cada contig. Las columnas aparecen en el orden que viene en la pagina web del enlace. 
 
-¿Qué información tiene los archivos .bed?
+**¿Qué información tiene los archivos .bed?**
 Incluye las coordenadas de las regiones con baja calidad.
 
-¿Cuál es la cobertura media estimada de las secuencias homocigotas?
+**¿Cuál es la cobertura media estimada de las secuencias homocigotas?**
 La cobertura se puede ver en el archivo hifiasm como [M::purge_dups] homozygous read coverage threshold: X. En este caso es 12. 
-¿Y la de las heterocigotas?
+**¿Y la de las heterocigotas?**
 En un gráfico de k-meros, para muestras heterocigotas debería haber dos picos. El pico menor se encuentra alrededor de la cobertura heterocigota.
+
+## Render
+Al renderizar aparece un error: Jupyter is not available in this Python instalattion. Install with python -m pip install jupyter
+Para solucionarlo hay que instalar jupyter desde el terminal de bash:
+```{bash}
+sudo apt install jupyter
+```
+
