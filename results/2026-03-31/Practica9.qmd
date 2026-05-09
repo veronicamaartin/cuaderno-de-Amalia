@@ -1,34 +1,38 @@
 ---
-title: "Untitled"
+title: "Practica 9"
 format:
   html: 
     embed-resources: true
 ---
+## Objetivos
+El objetivo es obtener una filogenia calibrada de homininos y algunos primates, a partir de secuencias mitocondriales. 
 
-##El objetivo es obtener una filogenia calibrada de homininos y algunos primates, a partir de secuencias mitocondriales. 
-
-#Datos: hay que descargar y guardar el archivo mtDNA.fasta en la carpeta de datos
-
+## Datos
+Hay que descargar y guardar el archivo mtDNA.fasta en la carpeta de datos. Como al ejecutar library(phangorn) nos da error, hay que instalarlo:
+```{r}
 install.packages('phangorn')
+```
+
 ```{r}
 library(phangorn)
 mtdna <- read.phyDat('../../data/mtDNA.fasta', format = 'fasta')
 ```
-#con la función glance() podemos echar un vistazo al objeto mtdna, que es de tipo phyDat
-#con la funcion image() podemos generar una imagen del alineamiento
+Con la función glance() podemos echar un vistazo al objeto mtdna, que es de tipo phyDat.
+Con la funcion image() podemos generar una imagen del alineamiento.
 ```{r}
 glance(mtdna)
 image(mtdna)
 ```
-##Ejercicio 1: ¿Puedes confirmar el número de secuencias? ¿Qué longitud tiene el alineamiento? ¿Qué función usarías para extraer los nombres de las secuencias?
-#El número de secuencias se puede obtener con la función glance(), te dice que hay 42 secuencias en la columna nseq y 16603 que sera tambien la longitud del alineamiento.
-#Para extraer los nombres de las secuencias utilizamos la función names(mtdna)
+## Ejercicio 1
+**¿Puedes confirmar el número de secuencias? ¿Qué longitud tiene el alineamiento? ¿Qué función usarías para extraer los nombres de las secuencias?**
+El número de secuencias se puede obtener con la función glance(), te dice que hay 42 secuencias en la columna nseq y 16603 que sera tambien la longitud del alineamiento.
+Para extraer los nombres de las secuencias utilizamos la función names(mtdna)
 ```{r}
 names(mtdna)
 ```
 
-##ARBOLES BASADOS EN DISTANCIAS
-#Los árboles NJ y UPGMA pueden proporcionar una idea rápida de cómo podría ser la relación filogenética entre las secuencias. Como métodos basados en distancias que son, necesitamos calcular primero las distancias. Podemos hacerlo en el mismo paso en el que generamos el árbol: nj(dist.ml(mtdna)). O bien, podemos hacerlo en dos pasos: guardar la matriz de distancias en un objeto de clase dist, y después generar los árboles.
+## ARBOLES BASADOS EN DISTANCIAS
+Los árboles NJ y UPGMA pueden proporcionar una idea rápida de cómo podría ser la relación filogenética entre las secuencias. Como métodos basados en distancias que son, necesitamos calcular primero las distancias. Podemos hacerlo en el mismo paso en el que generamos el árbol: nj(dist.ml(mtdna)). O bien, podemos hacerlo en dos pasos: guardar la matriz de distancias en un objeto de clase dist, y después generar los árboles.
 
 ```{r}
 nj(dist.ml(mtdna))
@@ -40,11 +44,11 @@ mt_nj    <- NJ(distancias)
 mt_upgma <- upgma(distancias)
 ```
 
-#EJERCICIO 2
-#¿De qué clase son los objetos mt_nj y mt_upgma?
-#Son objetos de clase dist
+## Ejercicio 2
+**¿De qué clase son los objetos mt_nj y mt_upgma?**
+Son objetos de clase dist
 
-#Consulta la estructura de estos objetos (str(mt_nj)).
+**Consulta la estructura de estos objetos (str(mt_nj))**
 ```{r}
 str(mt_nj)
 ```
@@ -53,33 +57,35 @@ str(mt_nj)
 str(mt_upgma)
 ```
 
-#Represéntalos gráficamente (plot(mt_nj)) y consulta la ayuda de la función plot.phylo() para saber qué opciones de representación gráfica tienes.
+**Represéntalos gráficamente (plot(mt_nj)) y consulta la ayuda de la función plot.phylo() para saber qué opciones de representación gráfica tienes.**
 ```{r}
 plot(mt_nj)
 ```
 
 ```{r}
+#| fig-width: 12
+#| fig-heiht: 12
 plot(mt_upgma)
 ```
 
 ```{r}
 help("plot.phylo")
 ```
-#Los opciones de gráficas son phylogram, fan, unrooted, radial, tidy
+Los opciones de gráficas son phylogram, fan, unrooted, radial, tidy
 
-#Para qué sirven las funciones add.scale.bar() y axisPhylo()?
+**Para qué sirven las funciones add.scale.bar() y axisPhylo()?**
 
 ```{r}
 help("add.scale.bar")
 ```
-#añade una barra horizontal dnado la escala de la longitud de la rama
+Añade una barra horizontal dnado la escala de la longitud de la rama
 ```{r}
 help("axisPhylo")
 ```
-#añade una escala de los ejes
+Añade una escala de los ejes
 
-#ENRAIZAR
-#El árbol mt_nj no está enraizado (puedes comprobarlo con is.rooted()). Tenemos un par de opciones para enraizarlo. Una opción es root(), función en la que debemos especificar o bien el outgroup o bien el nodo interno en el que queremos situar la raíz. Para saber cómo identificar los nodos internos, puedes invocar nodelabels() después de haber usado plot(mt_nj). Por ejemplo, en mi caso, el nodo 75 parece ser el ancestro entre gorilas y chimpancés, y por tanto también es ancestro de los humanos. Por tanto:
+## ENRAIZAR
+El árbol mt_nj no está enraizado (puedes comprobarlo con is.rooted()). Tenemos un par de opciones para enraizarlo. Una opción es root(), función en la que debemos especificar o bien el outgroup o bien el nodo interno en el que queremos situar la raíz. Para saber cómo identificar los nodos internos, puedes invocar nodelabels() después de haber usado plot(mt_nj). Por ejemplo, en mi caso, el nodo 75 parece ser el ancestro entre gorilas y chimpancés, y por tanto también es ancestro de los humanos. Por tanto:
 ```{r}
 is.rooted(mt_nj)
 ```
@@ -88,28 +94,28 @@ is.rooted(mt_nj)
 mt_nj_rooted <- root(mt_nj, node = 75)
 ```
 
-#Con un outgroup
-#La numeración de los nodos internos siempre sigue a la de las hojas (o puntas) del árbol. El orden es caprichoso y después de enraizar, lo que era el 75 en mt_nj ahora será el 43 en mt_nj_rooted. Para garantizar que el enraizado no depende de la numeración, es más seguro usar el nombre del outgroup:
+**Con un outgroup**
+La numeración de los nodos internos siempre sigue a la de las hojas (o puntas) del árbol. El orden es caprichoso y después de enraizar, lo que era el 75 en mt_nj ahora será el 43 en mt_nj_rooted. Para garantizar que el enraizado no depende de la numeración, es más seguro usar el nombre del outgroup:
 ```{r}
 # Debería dar el mismo resultado:
 mt_nj_rooted <- root(mt_nj, outgroup = 'G.gorilla_D38114')
 ```
 
-#En el punto medio
-#Al representar el árbol enraizado (plot(mt_nj_rooted)) verás que no todas las hojas del árbol están a la misma altura. El punto exacto en el que se sitúa la raíz en una rama es arbitrario y root() no se esfuerza mucho en intentar que el árbol parezca ultramétrico. La otra opción es la función midpoint(), que escoge la posición de la raíz para que el árbol esté más equilibrado:
+**En el punto medio**
+Al representar el árbol enraizado (plot(mt_nj_rooted)) verás que no todas las hojas del árbol están a la misma altura. El punto exacto en el que se sitúa la raíz en una rama es arbitrario y root() no se esfuerza mucho en intentar que el árbol parezca ultramétrico. La otra opción es la función midpoint(), que escoge la posición de la raíz para que el árbol esté más equilibrado:
 ```{r}
 # Esto sobreescribe el objeto anterior:
 #| fig-width: 7
-#| fig-heiht: 7
+#| fig-heiht: 12
 mt_nj_rooted <- midpoint(mt_nj)
 plot(mt_nj_rooted, align.tip.label = TRUE, main = 'NJ, enraizado en punto medio')
 nodelabels(frame = 'none')
 add.scale.bar()
 ```
-##Con datación de hojas
-#El enraizado en punto medio asume que todas las hojas son contemporáneas, como sucede en muchos casos. Pero, en nuestros datos tenemos secuencias contemporáneas y también arcaicas. En el apéndice encontrarás referencias sobre las edades estimadas de esas secuencias. Conociendo estas edades, podemos aplicar un método de enraizado llamado root-to-tip regression, mediante la función rtt() de ape.
+**Con datación de hojas**
+El enraizado en punto medio asume que todas las hojas son contemporáneas, como sucede en muchos casos. Pero, en nuestros datos tenemos secuencias contemporáneas y también arcaicas. En el apéndice encontrarás referencias sobre las edades estimadas de esas secuencias. Conociendo estas edades, podemos aplicar un método de enraizado llamado root-to-tip regression, mediante la función rtt() de ape.
 
-#Lo primero es crear un vector de fechas (o edades) para todas las hojas del árbol. Podemos expressar las edades de las secuencias arcaicas como el número (negativo) de años que hace que dejaron de evolucionar. Para saber el orden en que debemos especificar las edades, podemos usar mt_nj$tip.label.
+Lo primero es crear un vector de fechas (o edades) para todas las hojas del árbol. Podemos expressar las edades de las secuencias arcaicas como el número (negativo) de años que hace que dejaron de evolucionar. Para saber el orden en que debemos especificar las edades, podemos usar mt_nj$tip.label.
 ```{r}
 fechas <- c(0, 0, 0, 0, 0, 0, 0, 0, 0,
             -400000,
@@ -126,28 +132,26 @@ fechas
 mt_nj_rtt <- rtt(mt_nj, tip.dates = fechas, objective = 'rms')
 ```
 
-#EJERCICIO 3
+## Ejercicio 3
 
-#¿Se corresponden bien las distancias evolutivas estimadas con las dataciones?
+**¿Se corresponden bien las distancias evolutivas estimadas con las dataciones?¿Qué secuencias crees que se ajustan menos a su supuesta edad?¿Qué razones puede haber para que la edad de una secuencia no se corresponda con la cantidad de cambios que ha acumulado?**
 ```{r}
 #| fig-width: 12
-#| fig-heiht: 7
+#| fig-heiht: 12
 plot(mt_nj_rtt, align.tip.label = TRUE, show.tip.label = TRUE)
 ```
-#h. heidelbergensis, su rama en el arbol sequeda bastante mas atras que otros, no es normal que los denisovanos tengan una rama mas larga, incluso pareciendo contemporaneos con los humanos modernos. esto significa que la funcion rtt busca la mejor correlacion posible entre longitudes de ramas y el tiempo que ha pasado desde que dejaron de existir, es dificil aplicar a la perfeccion el reloj molecular. Es dificil de leer, no es nada obvio. Podemos desconfiar de que la datacion sea correcta, a esas dos muestras de denisovanos les hemos asignado una edad mas antigua que la que le corresponde, igual tienen margenes de error muy grande y no es representativa la media. Las meustras arqueologicas contienen errores, cuando secuencian este DNA arcaico se supone que corrigen estos errores, esta fragmentado pero se puede reconstruir el DNA mitocondrial. Igual el metodo estadistico que han utilizado para corregir los erroes de secuenciacion puede que no haya sido perfecto. esa degradacion del DNA puede producir esa tendencia a alargar las ramas, pero son los datos con los que vamos a trabajar. Eliminaremos la secuencia del gorila porque es muy antigua en comparacion con las otras, puede haber evolucionado a una velocidad diferente. Tambien eliminamos pares o trios de neandertales que son completamente identicos entre ellos. de cada uno de esos grupos nos quedamos con una copia, porque datar las muestras es mucho trabajo y puede que el programa no funcione bien, es mejor tener solo una secuencia representante de cada grupo. 
+H. heidelbergensis, su rama en el arbol sequeda bastante mas atras que otros, no es normal que los denisovanos tengan una rama mas larga, incluso pareciendo contemporaneos con los humanos modernos. Esto significa que la funcion rtt busca la mejor correlacion posible entre longitudes de ramas y el tiempo que ha pasado desde que dejaron de existir, es dificil aplicar a la perfeccion el reloj molecular. Es dificil de leer, no es nada obvio. Podemos desconfiar de que la datacion sea correcta, a esas dos muestras de denisovanos les hemos asignado una edad mas antigua que la que le corresponde, igual tienen margenes de error muy grande y no es representativa la media. Las meustras arqueologicas contienen errores, cuando secuencian este DNA arcaico se supone que corrigen estos errores, esta fragmentado pero se puede reconstruir el DNA mitocondrial. Igual el metodo estadistico que han utilizado para corregir los erroes de secuenciacion puede que no haya sido perfecto. esa degradacion del DNA puede producir esa tendencia a alargar las ramas, pero son los datos con los que vamos a trabajar. Eliminaremos la secuencia del gorila porque es muy antigua en comparacion con las otras, puede haber evolucionado a una velocidad diferente. Tambien eliminamos pares o trios de neandertales que son completamente identicos entre ellos. de cada uno de esos grupos nos quedamos con una copia, porque datar las muestras es mucho trabajo y puede que el programa no funcione bien, es mejor tener solo una secuencia representante de cada grupo. 
 
-#¿Qué secuencias crees que se ajustan menos a su supuesta edad?
 
-#¿Qué razones puede haber para que la edad de una secuencia no se corresponda con la cantidad de cambios que ha acumulado?
 
-#Distancias
-#Si has creado el objeto distancias antes, puedes usarlo para conocer la cantidad estimada de cambios entre los cromosomas mitocondriales humanos y de neandertales, por ejemplo. El objeto de clase dist es incómodo, pero podemos obtener una simple matriz fácilmente:
+## Distancias
+Si has creado el objeto distancias antes, puedes usarlo para conocer la cantidad estimada de cambios entre los cromosomas mitocondriales humanos y de neandertales, por ejemplo. El objeto de clase dist es incómodo, pero podemos obtener una simple matriz fácilmente:
 ```{r}
 distMat <- as.matrix(distancias)
 distMat
 ```
 
-#Aprovechando que los nombres de las secuencias tienen una estructura coherente, podemos usar startsWith() para seleccionar a los humanos modernos o a los neandertales, etc.:
+Aprovechando que los nombres de las secuencias tienen una estructura coherente, podemos usar startsWith() para seleccionar a los humanos modernos o a los neandertales, etc.:
 
 ```{r}
 # Esto son vectores lógicos que podemos usar después para seleccionar filas
@@ -159,14 +163,14 @@ chimpances   <- startsWith(colnames(distMat), 'P.troglodytes')
 bonobos      <- startsWith(colnames(distMat), 'P.paniscus')
 ```
 
-#La distancia estimada media entre humanos y neandertales se puede obtener como:
+La distancia estimada media entre humanos y neandertales se puede obtener como:
 ```{r}
 mean(distMat[modernos, neandertales])
 ```
 
-#EJERCICIO 4
+## Ejercicio 4
 
-#Calcula las distancias medias entre todos los grupos.
+**Calcula las distancias medias entre todos los grupos**
 ```{r}
 mean(distMat[modernos, denisovanos])
 mean(distMat[modernos, chimpances])
@@ -179,12 +183,12 @@ mean(distMat[denisovanos, bonobos])
 mean(distMat[chimpances, bonobos])
 ```
 
-#¿Cuántas veces mayor es la distancia entre humanos y chimpancés que entre humanos y neandertales?
+**¿Cuántas veces mayor es la distancia entre humanos y chimpancés que entre humanos y neandertales?**
 ```{r}
 0.09104153/0.01214282
 ```
-#es 7.49 veces mayor
-#¿Cómo calcularías la distancia media entre dos secuencias de humanos modernos?
+Es 7.49 veces mayor
+**¿Cómo calcularías la distancia media entre dos secuencias de humanos modernos?**
 ```{r}
 mean(distMat[modernos, modernos])
 ```
@@ -199,7 +203,7 @@ z <- distMat[modernos, modernos]
 z[z == 0] <- NA
 mean(z, na.rm = TRUE)
 ```
-#es bajo, pero es más alto que lo que encontrariamos en cromosomas nucleares. Otra alternativa de solución es:
+Es bajo, pero es más alto que lo que encontrariamos en cromosomas nucleares. Otra alternativa de solución es:
 ```{r}
 d <- distMat[modernos, modernos]
 mean(d[lower.tri(d)])
@@ -209,16 +213,16 @@ mean(d[lower.tri(d)])
 distCofen <- cophenetic(mt_nj_rooted)
 ```
 
-#EJERCICIO 5
-#¿Cuanto se parecen las distancias estimadas a las distancias cofenéticas?
+## Ejercicio 5
+**¿Cuanto se parecen las distancias estimadas a las distancias cofenéticas?**
 ```{r}
 # Aquí usamos las matricees como vectores:
 plot(distMat, distCofen, xlab = 'Distancias F81', ylab = 'Dist. cofenéticas')
 abline(a = 0, b = 1, col = 'red', lty = 2)
 ```
 
-#Limpieza o filtrado del alineamiento
-#Las distancias crudas, como número de diferencias, nos pueden informar de la presencia de pares de secuencias idénticas. Podríamos dejarlas, pero algunos de los métodos que usaremos a continuación pueden generar errores, por ejemplo cuando dos secuencias idénticas se supone que pertenecen a épocas diferentes.
+**Limpieza o filtrado del alineamiento**
+Las distancias crudas, como número de diferencias, nos pueden informar de la presencia de pares de secuencias idénticas. Podríamos dejarlas, pero algunos de los métodos que usaremos a continuación pueden generar errores, por ejemplo cuando dos secuencias idénticas se supone que pertenecen a épocas diferentes.
 
 ```{r}
 crudas <- dist.dna(as.DNAbin(mtdna), model = 'raw')
@@ -229,6 +233,8 @@ identicas
 ```
 
 ```{r}
+#| fig-width: 12
+#| fig-heiht: 12
 repetidas <- unique(c(identicas[, 'row'], identicas[, 'col']))
 heatmap(crudas[repetidas, repetidas], cexRow = 0.7, cexCol = 0.7)
 ```
@@ -241,8 +247,8 @@ mtdna37 <- mtdna[! grepl('(KX198085|KX198086|KX198082|KX198088|KX198083)',
 mtdna37
 ```
 
-#EJERCICIO 6
-#serias capaz de crear otro conjunto de datos, mtdna28, que solo contenga secuencias del genero Homo
+## Ejercicio 6
+**serias capaz de crear otro conjunto de datos, mtdna28, que solo contenga secuencias del genero Homo**
 ```{r}
 mtdna28 <- mtdna37[grepl(('^H'), names(mtdna37)),]
 mtdna28
@@ -253,15 +259,15 @@ mtdna36 <- mtdna37[! startsWith(names(mtdna37), 'G.gorilla'),]
 mtdna36
 ```
 
-#Escoger el modelo de evolución molecular
-#Las secuencias mitocondriales proporcionan suficiente información para determinar con confianza la topología del árbol que relaciona los grupos principales. Sólo algunas regiones de árbol, como la relación exacta entre los miembros de un mismo grupo, presentan dificultad. Para estimar mejor la topología y las longitudes de las ramas, debemos usar el método de máxima verosimilitud, para el cual sí es fundamental escoger el modelo evolutivo más adecuado. Para ello usamos la funcion modelTest(), que devuelve un objeto de clase modelTest, que también puede usarse como un simple marco de datos.
+## Escoger el modelo de evolución molecular
+Las secuencias mitocondriales proporcionan suficiente información para determinar con confianza la topología del árbol que relaciona los grupos principales. Sólo algunas regiones de árbol, como la relación exacta entre los miembros de un mismo grupo, presentan dificultad. Para estimar mejor la topología y las longitudes de las ramas, debemos usar el método de máxima verosimilitud, para el cual sí es fundamental escoger el modelo evolutivo más adecuado. Para ello usamos la funcion modelTest(), que devuelve un objeto de clase modelTest, que también puede usarse como un simple marco de datos.
 
 ```{r}
 modelos <- modelTest(mtdna36, control = pml.control(trace = 0))
 head(modelos)
 ```
 
-#si tenemos mas de un procesador (no lo se) podemos pedir que haga esto:
+Si tenemos mas de un procesador (no lo se) podemos pedir que haga esto:
 ```{r}
 modelos <- modelTest(mtdna36, control = pml.control(trace = 0),
                      multicore = TRUE, mc.cores = 4)
@@ -272,5 +278,5 @@ fit <- as.pml(modelos, 'GTR+G(4)+I')
 fit
 ```
 
-#EJERCICIO 7
-#cual es el mejor modelo para secuencias solo del genero Homo?
+## Ejercicio 7
+**¿Cuál es el mejor modelo para secuencias solo del genero Homo?**
