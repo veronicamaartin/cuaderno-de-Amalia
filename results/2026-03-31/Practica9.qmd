@@ -1,8 +1,18 @@
 ---
 title: "Practica 9"
+lang: es
+date: today
+execute: 
+  eval: true
+  error: true
+engine: knitr
+bibliography: ../../doc/references.bib
+language:
+   title-block-published: "Última actualización:"
+   section-title-references: "Bibliografía"
 format:
-  html: 
-    embed-resources: true
+   html:
+      embed-resources: true
 ---
 ## Objetivos
 El objetivo es obtener una filogenia calibrada de homininos y algunos primates, a partir de secuencias mitocondriales. 
@@ -23,6 +33,8 @@ Con la funcion image() podemos generar una imagen del alineamiento.
 glance(mtdna)
 image(mtdna)
 ```
+
+:::{.callout-note icon=false}
 ## Ejercicio 1
 **¿Puedes confirmar el número de secuencias? ¿Qué longitud tiene el alineamiento? ¿Qué función usarías para extraer los nombres de las secuencias?**
 El número de secuencias se puede obtener con la función glance(), te dice que hay 42 secuencias en la columna nseq y 16603 que sera tambien la longitud del alineamiento.
@@ -30,7 +42,7 @@ Para extraer los nombres de las secuencias utilizamos la función names(mtdna)
 ```{r}
 names(mtdna)
 ```
-
+:::
 ## ARBOLES BASADOS EN DISTANCIAS
 Los árboles NJ y UPGMA pueden proporcionar una idea rápida de cómo podría ser la relación filogenética entre las secuencias. Como métodos basados en distancias que son, necesitamos calcular primero las distancias. Podemos hacerlo en el mismo paso en el que generamos el árbol: nj(dist.ml(mtdna)). O bien, podemos hacerlo en dos pasos: guardar la matriz de distancias en un objeto de clase dist, y después generar los árboles.
 
@@ -44,6 +56,8 @@ mt_nj    <- NJ(distancias)
 mt_upgma <- upgma(distancias)
 ```
 
+
+:::{.callout-note icon=false}
 ## Ejercicio 2
 **¿De qué clase son los objetos mt_nj y mt_upgma?**
 Son objetos de clase dist
@@ -83,6 +97,8 @@ Añade una barra horizontal dnado la escala de la longitud de la rama
 help("axisPhylo")
 ```
 Añade una escala de los ejes
+:::
+
 
 ## ENRAIZAR
 El árbol mt_nj no está enraizado (puedes comprobarlo con is.rooted()). Tenemos un par de opciones para enraizarlo. Una opción es root(), función en la que debemos especificar o bien el outgroup o bien el nodo interno en el que queremos situar la raíz. Para saber cómo identificar los nodos internos, puedes invocar nodelabels() después de haber usado plot(mt_nj). Por ejemplo, en mi caso, el nodo 75 parece ser el ancestro entre gorilas y chimpancés, y por tanto también es ancestro de los humanos. Por tanto:
@@ -132,6 +148,9 @@ fechas
 mt_nj_rtt <- rtt(mt_nj, tip.dates = fechas, objective = 'rms')
 ```
 
+
+:::{.callout-note icon=false}
+
 ## Ejercicio 3
 
 **¿Se corresponden bien las distancias evolutivas estimadas con las dataciones?¿Qué secuencias crees que se ajustan menos a su supuesta edad?¿Qué razones puede haber para que la edad de una secuencia no se corresponda con la cantidad de cambios que ha acumulado?**
@@ -141,7 +160,7 @@ mt_nj_rtt <- rtt(mt_nj, tip.dates = fechas, objective = 'rms')
 plot(mt_nj_rtt, align.tip.label = TRUE, show.tip.label = TRUE)
 ```
 H. heidelbergensis, su rama en el arbol sequeda bastante mas atras que otros, no es normal que los denisovanos tengan una rama mas larga, incluso pareciendo contemporaneos con los humanos modernos. Esto significa que la funcion rtt busca la mejor correlacion posible entre longitudes de ramas y el tiempo que ha pasado desde que dejaron de existir, es dificil aplicar a la perfeccion el reloj molecular. Es dificil de leer, no es nada obvio. Podemos desconfiar de que la datacion sea correcta, a esas dos muestras de denisovanos les hemos asignado una edad mas antigua que la que le corresponde, igual tienen margenes de error muy grande y no es representativa la media. Las meustras arqueologicas contienen errores, cuando secuencian este DNA arcaico se supone que corrigen estos errores, esta fragmentado pero se puede reconstruir el DNA mitocondrial. Igual el metodo estadistico que han utilizado para corregir los erroes de secuenciacion puede que no haya sido perfecto. esa degradacion del DNA puede producir esa tendencia a alargar las ramas, pero son los datos con los que vamos a trabajar. Eliminaremos la secuencia del gorila porque es muy antigua en comparacion con las otras, puede haber evolucionado a una velocidad diferente. Tambien eliminamos pares o trios de neandertales que son completamente identicos entre ellos. de cada uno de esos grupos nos quedamos con una copia, porque datar las muestras es mucho trabajo y puede que el programa no funcione bien, es mejor tener solo una secuencia representante de cada grupo. 
-
+:::
 
 
 ## Distancias
@@ -167,6 +186,7 @@ La distancia estimada media entre humanos y neandertales se puede obtener como:
 ```{r}
 mean(distMat[modernos, neandertales])
 ```
+:::{.callout-note icon=false}
 
 ## Ejercicio 4
 
@@ -212,7 +232,10 @@ mean(d[lower.tri(d)])
 ```{r}
 distCofen <- cophenetic(mt_nj_rooted)
 ```
+:::
 
+
+:::{.callout-note icon=false}
 ## Ejercicio 5
 **¿Cuanto se parecen las distancias estimadas a las distancias cofenéticas?**
 ```{r}
@@ -246,6 +269,9 @@ mtdna37 <- mtdna[! grepl('(KX198085|KX198086|KX198082|KX198088|KX198083)',
                          names(mtdna)), ]
 mtdna37
 ```
+:::
+
+:::{.callout-note icon=false}
 
 ## Ejercicio 6
 **serias capaz de crear otro conjunto de datos, mtdna28, que solo contenga secuencias del genero Homo**
@@ -258,6 +284,8 @@ mtdna28
 mtdna36 <- mtdna37[! startsWith(names(mtdna37), 'G.gorilla'),]
 mtdna36
 ```
+:::
+
 
 ## Escoger el modelo de evolución molecular
 Las secuencias mitocondriales proporcionan suficiente información para determinar con confianza la topología del árbol que relaciona los grupos principales. Sólo algunas regiones de árbol, como la relación exacta entre los miembros de un mismo grupo, presentan dificultad. Para estimar mejor la topología y las longitudes de las ramas, debemos usar el método de máxima verosimilitud, para el cual sí es fundamental escoger el modelo evolutivo más adecuado. Para ello usamos la funcion modelTest(), que devuelve un objeto de clase modelTest, que también puede usarse como un simple marco de datos.
