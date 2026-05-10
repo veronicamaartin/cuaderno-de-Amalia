@@ -1,12 +1,12 @@
 ---
-title: "Búsquedas programáticas en la base de datos ENA"
+title: "Práctica 5. Búsquedas programáticas en la base de datos ENA"
 lang: es
 date: today
 execute: 
   output: true
   error: true
 engine: knitr
-bibliography: ../../references.bib
+bibliography: ../../doc/references.bib
 language:
    title-block-published: "Última actualización:"
    section-title-references: "Bibliografía"
@@ -19,10 +19,15 @@ format:
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-# Preparación
+## Preparación
 En esta práctica vamos a utilizar los paquetes `curl` y `kableExtra` de R.
+```{r}
+if (!require("curl")) install.packages("curl")
+```
+Se ha instalado el paquete curl que no estaba antes
 
-# Objetivos
+
+## Objetivos
 1. Aprender a usar la API[^1] de [ENA](https://www.ebi.ac.uk/ena).
 
 [^1]: API: *Application programming interface*. 
@@ -112,7 +117,7 @@ https://www.ebi.ac.uk/ena/portal/api/search?result=analysis&query=country="Unite
 https://www.ebi.ac.uk/ena/portal/api/search?result=assembly&query=tax_tree(6157) AND genome_representation="full"&fields=version,tax_id,scientific_name,last_updated,base_count&limit=0
 ```
 
-# Desde una sesión de R
+## Desde una sesión de R
 La función `read.table()` puede leer directamente de una página web. Pero si
 queremos descargar el resultado de una consulta programática en un archivo,
 podemos usar el paquete la función `curl_download()`, del paquete `curl`.
@@ -124,21 +129,20 @@ library('curl')
 :::{.callout-note icon=false}
 ## Ejercicio 1
 
-Intenta ejecutar los bloques siguientes. Compáralos y explica qué problemas o
-dificultades identificas en cada uno.
+**Intenta ejecutar los bloques siguientes. Compáralos y explica qué problemas o dificultades identificas en cada uno.**
 
 
 ```{r}
 curl_download('https://www.ebi.ac.uk/ena/portal/api/search?result=assembly&query=tax_tree(6157) AND genome_representation="full"&fields=version,tax_id,scientific_name,last_updated,base_count&limit=0',
               destfile = 'z1.txt')
 ```
-
+Da error, pone que la URL esta usando un formato malo o ilegal o que falta la URL, se cambia el texto de la direccion web al ejecutarlo, la unica diferencia que hay con el siguiente codigo (que si que da bien), es que dentro de curl_download utiliza tambien URLencode. El comando URLencode se utiliza para ara codificar caracteres especiales en cadenas de texto para que sean seguros al usarse en URLs,  convirtiendo espacios en %20 y caracteres reservados en sus equivalentes hexadecimales.
 ```{r}
 curl_download(
   URLencode('https://www.ebi.ac.uk/ena/portal/api/search?result=assembly&query=tax_tree(6157) AND genome_representation="full"&fields=version,tax_id,scientific_name,last_updated,base_count&limit=0'),
   destfile = 'z1.txt')
 ```
-
+Esto no da error, se ejecuta bien. Tiene la ventaja de que solo es un par de lineas
 ```{r}
 portal <- 'https://www.ebi.ac.uk/ena/portal/api/search?'
 result <- 'result=assembly&'
@@ -148,19 +152,53 @@ limit  <- 'limit=0'
 URL <- paste0(portal, result, query, fields, limit)
 curl_download(URLencode(URL), destfile = 'z2.txt')
 ```
-
+Este tampoco da error, en este caso se guarda cada parte de la URL como variables, y despues se utiliza la función curl_download y URLencode de la variable URL que incluye las diferentes partes  de la URL, son 7 ordenes y se crean bastantes variables. Tiene la desventaja de que hemos tenido que escribir bastante, pero es mas visual, tiene mas lineas pero son mas cortas, es mas facil identificar que es lo que le estamos pidiendo que nos muestre.  
+**limit=0, nos da todos los resultados, aunque sean mas de 10.000**
 :::
 
 :::{.callout-note icon=false}
 ## Ejercicio 2
-Confecciona una URL para descargar una tabla de las secuencias codificantes de
-alcohol deshidrogenasas del género *Drosophila*, que te permita contestar las
-preguntas siguientes. Consulta el apéndice de este guión, si lo necesitas.
+**Confecciona una URL para descargar una tabla de las secuencias codificantes de alcohol deshidrogenasas del género *Drosophila*, que te permita contestar las preguntas siguientes. Consulta el apéndice de este guión, si lo necesitas.**
+Buscamos el numero que corresponde al genero de Drosophila en NCBI taxonomy, el numero es 7215, como ahora estamos buscando secuencias codificantes, y nos pide el numero de secuencias en su descripcion, sus longitudes, de cuantas especies diferentes son las secuencias y cuando se publicaron las mas recientes:
 
-1. ¿Cuántas secuencias hay con el término "alcohol dehydrogenase" en su descripción?
-2. ¿Qué longitudes tienen? 
-3. ¿De cuántas especies diferentes son estas secuencias?
-4. ¿Cuándo se publicaron las más recientes?
+curl -X POST -H "Content-Type: application/x-www-form-urlencoded" -d 'result=sequence&query=tax_tree(7215)%20AND%20description%3D%22alcohol%20dehydrogenase%22&fields=accession%2Cdescription%2Ctax_id%2Csub_species%2Cscientific_name%2Cfirst_public%2Cbase_count&format=tsv' "https://www.ebi.ac.uk/ena/portal/api/search"
+```{r}
+
+result3 <- 'result=sequence&'
+query3  <- 'query=tax_tree(7215) AND description="alcohol dehydrogenase"&'
+fields3 <- 'fields=accession,description,tax_id,sub_species,base_count,first_public&'
+
+URL3 <- paste0(portal, result3, query3, fields3, limit)
+curl_download(URLencode(URL3), destfile = 'z4.txt')
+```
+
+```{r}
+setwd("~/cuaderno/results/2026-02-24")
+adh <- read.table('z4.txt', quote ="", header =TRUE, sep ="\t")
+```
+Ya funciona el comando, el archivo correspondiente es z4
+**1. ¿Cuántas secuencias hay con el término "alcohol dehydrogenase" en su descripción?**
+```{r}
+dim(adh)
+```
+Hay 1258 secuencias con el término alcohol dehydrogenase en su descripción
+**2. ¿Qué longitudes tienen?**
+```{r}
+adh$base_count
+summary(adh$base_count)
+```
+**3. ¿De cuántas especies diferentes son estas secuencias?**
+```{r}
+names(adh)
+unique(adh$scientific_name)
+```
+308 especies
+**4. ¿Cuándo se publicaron las más recientes?**
+```{r}
+head(adh$first_public)
+tail(sort(adh$first_public))
+```
+En 2022
 :::
 
 # Trabajar con los resultados
