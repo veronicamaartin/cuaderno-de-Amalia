@@ -1,12 +1,12 @@
 ---
-title: "Búsquedas programáticas en Interpro"
+title: "Practica 6. Búsquedas programáticas en Interpro"
 lang: es
 date: today
 execute: 
   output: false
   error: true
 engine: knitr
-bibliography: ../../references.bib
+bibliography: ../../doc/references.bib
 language:
    title-block-published: "Última actualización:"
    section-title-references: "Bibliografía"
@@ -98,10 +98,23 @@ registros[[1]][['member_databases']]
 
 :::{.callout-note icon=false}
 ## Ejercicio 1
-Construye las URLs necesarias para determinar el número de registros del resto
-de tipos: *protein*, *structure*, *set*, y *proteome*. Fíjate en las posibles
-fuentes de cada tipo de datos, e intenta guardar la información en variables de
-tu sesión de R.
+**Construye las URLs necesarias para determinar el número de registros del resto de tipos: *protein*, *structure*, *set*, y *proteome*. Fíjate en las posiblesfuentes de cada tipo de datos, e intenta guardar la información en variables de tu sesión de R.**
+https://www.ebi.ac.uk/interpro/api/protein
+```{r}
+protein <- fromJSON(paste0(API, 'protein'))
+```
+https://www.ebi.ac.uk/interpro/api/structure
+```{r}
+structure <- fromJSON(paste0(API, 'structure'))
+```
+https://www.ebi.ac.uk/interpro/api/set
+```{r}
+set <- fromJSON(paste0(API, 'set'))
+```
+https://www.ebi.ac.uk/interpro/api/proteome
+```{r}
+proteome <- fromJSON(paste0(API, 'proteome'))
+```
 :::
 
 # Lista de datos de algún tipo
@@ -136,17 +149,24 @@ pfam01[['results']][['metadata']]
 
 Los siguientes 20 registros de Pfam se encuentran en `pfam01[['next']]`:
 `r pfam01[['next']]`. Y los podemos descargar igual.
-
 ```{r}
-library('kableExtra')
+install.packages("kableExtra")
+```
+No nos deja instalar el kableExtra, como ya pasó el otro dia, sustituimos el kableExtra por el paquete knitr y borramos el porcentaje
+```{r}
+library('knitr')
 pfam02 <- fromJSON(pfam01[['next']])
-kable(pfam02[['results']][['metadata']]) %>% kable_styling()
+kable(pfam02[['results']][['metadata']]) 
 ```
 
 :::{.callout-note icon=false}
 ## Ejercicio 2
-Crea una tercera lista con los contenidos de la tercera página de registros
-de Pfam.
+**Crea una tercera lista con los contenidos de la tercera página de registros de Pfam.**
+```{r}
+library('knitr')
+pfam03 <- fromJSON(pfam02[['next']])
+kable(pfam03[['results']][['metadata']]) 
+```
 :::
 
 # Unión de *páginas* en un mismo *data frame*
@@ -185,9 +205,14 @@ nombre_largo
 
 :::{.callout-note icon=false}
 ## Ejercicio 3
-Usa la función `fromJSON()` para guardar la información del registro P01923 
-(proteína de Swiss-Prot) y explora la estructura de los datos con la función
-`str()`. ¿Puedes extraer la secuencia?
+**Usa la función `fromJSON()` para guardar la información del registro P01923 (proteína de Swiss-Prot) y explora la estructura de los datos con la función `str()`. ¿Puedes extraer la secuencia?**
+Cambiamos el bloque anterior poniendo lo que nos pide el ejercicio. Como se trata de una proteina de Swiss-Prot ponemos reviewed y para extraer la secuencia ponemos sequence
+```{r}
+p01923 <- fromJSON(paste0(API, 'protein/reviewed/P01923'))
+str(p01923)
+secuencia <- p01923[['metadata']][['sequence']]
+secuencia
+```
 :::
 
 # Filtros. Cruzar dos tipos de datos
@@ -211,8 +236,38 @@ dominio o elemento funcional en InterPro.
 
 :::{.callout-note icon=false}
 ## Ejercicio 4
-Determina cuántos taxones de UniProtKB no tienen ninguna proteína asignada.
-¿Y qué proporción de proteínas cuentan con una estructura terciaria?
+**Determina cuántos taxones de UniProtKB no tienen ninguna proteína asignada. ¿Y qué proporción de proteínas cuentan con una estructura terciaria?**
+https://www.ebi.ac.uk/interprot/api/protein/taxonomy
+https://www.ebi.ac.uk/interpro/api/protein
+Primero creamos dos objetos con las dos urls:
+```{r}
+taxa <- fromJSON(paste0(API, 'taxonomy/protein'))
+taxonomia <- fromJSON(paste0(API, 'taxonomy'))
+str(taxa)
+str(taxonomia)
+todotaxonomia <- taxonomia[['taxa']][['uniprot']]
+solotaxones <- taxa [['taxa']][['uniprot']]
+todotaxonomia
+solotaxones
+todotaxonomia - solotaxones
+```
+Para obtener los taxones que no tienen ninguna proteina asignada: 
+**todo - solotaxones**
+Ahora para obtener la proporcion de las que tienen estructuras terciarias
+https://www.ebi.ac.uk/interprot/api/protein/structure
+https://www.ebi.ac.uk/interprot/api/protein
+```{r}
+estructura <- fromJSON(paste0(API, 'protein/structure'))
+todo <- fromJSON(paste0(API, 'protein'))
+str(estructura)
+str(todo)
+estructura3 <- estructura[['structures']][['pdb']]
+todas <- todo[['proteins']][['uniprot']]
+estructura3
+(estructura3/todas)*100
+
+
+```
 :::
 
 # Filtros. Subconjunto de registros
