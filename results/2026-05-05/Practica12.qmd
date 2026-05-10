@@ -1,5 +1,18 @@
 ---
 title: "Practica12"
+lang: es
+date: today
+execute: 
+  eval: true
+  error: true
+engine: knitr
+bibliography: ../../doc/references.bib
+language:
+   title-block-published: "Última actualización:"
+   section-title-references: "Bibliografía"
+format:
+   html:
+      embed-resources: true
 ---
 ## Datos
 Utilizaremos las medidas de expresión génica del archivo salmon.merged.gene_counts.tsv que podéis descargar en este enlace o en el aula virtual. Los datos proceden de 12 genotecas de RNA-seq de lecturas emparejadas, de muestras de Drosophila melanogaster de dos orígenes geográficos (Panamá y Maine) y dos tratamientos de temperatura (low y high) (Zhao 2015). Hay 3 réplicas biológicas para cada combinación de región y temperatura. Si tenéis curiosidad sobre cómo se han obtenido los recuentos de lecturas por gen a partir de los archivos FASTQ, podéis consultarlo en este enlace.
@@ -14,6 +27,8 @@ muestras <- read.table('../../data/dme_elev_samples.tsv', header = TRUE)
 genex <- read.table('../../data/salmon.merged.gene_counts.tsv',
                     header = TRUE)
 ```
+
+:::{.callout-note icon=false}
 
 ## Ejercicio 1
 Recuerda dejar constancia en un bloque de código de cómo obtienes las respuestas.
@@ -60,6 +75,8 @@ Es la nube de puntos de cada pareja de columnas, la diagonal es que lo genes con
 genes_no_expresados <- sum(rowSums(genex[, -c(1,2)]) ==0)
 genes_no_expresados
 ```
+
+:::
 
 ## Crear el objeto de clase DESeqDataset
 Para crear un objeto de clase DESeqDataSet necesitamos que las filas de la tabla muestras estén en el mismo orden que las columnas en genex. La función DESeqDataSetFromMatrix() necesita que los recuentos sean una matriz, no un marco de datos. Y en muestras debe haber factores.
@@ -115,6 +132,9 @@ res
 ```
 
 Por defecto, la función results() produce la tabla de resultados para el contraste entre el nivel último y el de referencia del último factor en la tabla que describe las muestras. En este caso, el factor es temp, el nivel de referencia es low y el otro nivel es high. Por tanto, los valores de log2FoldChange representan el logaritmo en base 2 de la relación entre niveles de expresión en muestras high respecto de muestras low.
+
+:::{.callout-note icon=false}
+
 ## Ejercicio 3
 **Mira la ayuda de results() y genera también la tabla de resultados para el contraste entre las dos regiones de procedencia de las moscas.**
 ```{r}
@@ -154,6 +174,9 @@ El factor que mas afecta es la temperatura.
 **¿Cuál es la tasa de falsos positivos (FDR)?**
 Es 0.1, se ve del summary
 En la función results hay un parametro que es alpha, que es el umbral de significancia utilizado. Podemos utilizar un 5%. 
+
+:::
+
 ## Graficas
 ```{r}
 plotMA(res)
@@ -164,6 +187,8 @@ resShrink <- lfcShrink(dds1, coef = 'temp_high_vs_low',
 plotMA(resShrink)
 ```
 
+:::{.callout-note icon=false}
+
 ## Ejercicio 4
 **¿Sabrías hacer una gráfica volcán?**
 ```{r}
@@ -173,6 +198,8 @@ ggplot(res_df, aes(x = log2FoldChange, y = -log10(padj))) +
   geom_point(alpha = 0.5) + 
   theme_minimal()          
 ```
+
+:::
 ## Extraer datos transformados
 Aunque los datos de entrada no deben estar normalizados y la función DESeq() ya tiene en cuenta las diferencias de tamaño de genoteca entre muestras y la relación entre media y varianza, puede ser útil disponer de los datos normalizados para representarlos gráficamente. Para ello podemos usar las funciones vst() y assay():
 ```{r}
