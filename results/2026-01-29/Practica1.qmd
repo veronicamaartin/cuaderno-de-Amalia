@@ -6,7 +6,7 @@ execute:
   output: true
   error: true
 engine: knitr
-bibliography: ../../references.bib
+bibliography: ../../doc/references.bib
 language:
    title-block-published: "Última actualización:"
    section-title-references: "Bibliografía"
@@ -23,7 +23,7 @@ Para la descarga automática de secuencias usaremos el programa `wget`. En siste
 operativos basados en Debian, seguramente se pueden instalar los cinco programas
 así (con privilegios administrativos):
 
-```
+```{bash}
 apt install emboss exonerate wget muscle
 ```
 
@@ -58,7 +58,7 @@ versión de este primer guión. El *cuaderno* será una **carpeta** entera. Dale
 nombre adecuado y genera esta estructura en su interior usando los comandos de
 Bash que has aprendido:
 
-```
+```{bash}
 ├── data
 ├── doc
 └── results
