@@ -1,8 +1,18 @@
 ---
-title: "Practica10"
+title: "Practica 10"
+lang: es
+date: today
+execute: 
+  eval: true
+  error: true
+engine: knitr
+bibliography: ../../doc/references.bib
+language:
+   title-block-published: "Última actualización:"
+   section-title-references: "Bibliografía"
 format:
-  html: 
-    embed-resources: true
+   html:
+      embed-resources: true
 ---
 
 Primero hay que instalar el programa hifiasm en el terminal de batch
@@ -12,6 +22,9 @@ Hay que descargar el archivo At4.10.fa.gz en la carpeta data
 
 ## Revisión de los datos 
 Los datos están en formato FASTA porque contienen sólo lecturas de alta calidad, y hifiasm no utiliza la información de las calidades de cada base. El archivo está comprimido. Antes de empezar el ensamblaje deberíamos tener una idea de la cantidad de datos que tenemos. Si lo necesitas, utiliza una inteligencia artificial para responder las preguntas siguientes y anota en un bloque de código las órdenes utilizadas. Puedes hacerlo con instrucciones de Bash o de R, pero R necesitará cargar en memoria el archivo entero, lo que no sería muy práctico si se tratara de un archivo 10 o 50 veces mayor.
+
+
+:::{.callout-note icon=false}
 
 ## Ejercicio 1
 **¿Cuántas secuencias contiene el archivo?**
@@ -60,6 +73,8 @@ Como ya sabemos el número total de bases:
 echo "scale=2; 250599484/19000000" | bc
 ```
 La cobertura es de 13.18. scale=2 es para que muestre el resultado con 2 decimales.
+:::
+
 
 ## ENSAMBLAJE
 El programa hifiasm produce varios archivos de salida. Para tener la carpeta de trabajo ordenada, es recomendable crear un subcarpeta donde poder guardarlos. Si fuéramos a probar más de una estrategia de ensamblado, guardaríamos los resultados de cada intento en una carpeta diferente, que podríamos nombrar asm1, asm2, etc. Aunque sólo realicemos un ensamblaje, crearemos la carpeta asm1 para guardar los resultados en ella.
@@ -85,6 +100,8 @@ Las opciones significan lo siguiente:
 
 para ejecutar hifiasm podemos añadir antes del bloque HF=~/bin/hifiasm/hifiasm o export PATH=~/bin/hifiasm/hifiasm :$PATH
 
+:::{.callout-note icon=false}
+
 ## Ejercicio 2
 Consulta la ayuda de hifiasm (hifiasm -h) y contesta las preguntas siguientes:
 ```{bash}
@@ -108,8 +125,13 @@ Como no esta especificado nada, esta aplicando el nivel 3 de eliminacion de dupl
 
 **Si tuvieramos lecturas ultra-largas, ¿con qué opción o argumento añadiríamos esa información?**
 Hay que utilizar el argumento --ul
+:::
+
 
 ## Evaluación del resultado
+
+:::{.callout-note icon=false}
+
 ## Ejercicio 3
 Consulta la descripción de los archivos de salida que encontrarás en este enlace y contesta las preguntas siguientes:
 
@@ -126,6 +148,8 @@ Incluye las coordenadas de las regiones con baja calidad.
 La cobertura se puede ver en el archivo hifiasm como [M::purge_dups] homozygous read coverage threshold: X. En este caso es 12. 
 **¿Y la de las heterocigotas?**
 En un gráfico de k-meros, para muestras heterocigotas debería haber dos picos. El pico menor se encuentra alrededor de la cobertura heterocigota.
+:::
+
 
 ## Render
 Al renderizar aparece un error: Jupyter is not available in this Python instalattion. Install with python -m pip install jupyter

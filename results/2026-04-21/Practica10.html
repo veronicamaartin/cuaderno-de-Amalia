@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="es" xml:lang="es"><head>
 
 <meta charset="utf-8">
 <meta name="generator" content="quarto-1.6.42">
@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>Practica10</title>
+<title>Practica 10</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -18,6 +18,40 @@ ul.task-list{list-style: none;}
 ul.task-list li input[type="checkbox"] {
 width: 0.8em;
 margin: 0 0.8em 0.2em -1em;  vertical-align: middle;
+}
+
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+{ counter-reset: source-line 0; }
+pre.numberSource code > span
+{ position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+{ content: counter(source-line);
+position: relative; left: -1em; text-align: right; vertical-align: baseline;
+border: none; display: inline-block;
+-webkit-touch-callout: none; -webkit-user-select: none;
+-khtml-user-select: none; -moz-user-select: none;
+-ms-user-select: none; user-select: none;
+padding: 0 4px; width: 4em;
+}
+pre.numberSource { margin-left: 3em; padding-left: 4px; }
+div.sourceCode
+{ }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
 </style>
 
@@ -3053,7 +3087,7 @@ vertical-align: -.125em;
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">Practica10</h1>
+<h1 class="title">Practica 10</h1>
 </div>
 
 
@@ -3061,6 +3095,12 @@ vertical-align: -.125em;
 <div class="quarto-title-meta">
 
     
+    <div>
+    <div class="quarto-title-meta-heading">Última actualización:</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">10 de mayo de 2026</p>
+    </div>
+  </div>
   
     
   </div>
@@ -3078,88 +3118,282 @@ vertical-align: -.125em;
 <section id="revisión-de-los-datos" class="level2">
 <h2 class="anchored" data-anchor-id="revisión-de-los-datos">Revisión de los datos</h2>
 <p>Los datos están en formato FASTA porque contienen sólo lecturas de alta calidad, y hifiasm no utiliza la información de las calidades de cada base. El archivo está comprimido. Antes de empezar el ensamblaje deberíamos tener una idea de la cantidad de datos que tenemos. Si lo necesitas, utiliza una inteligencia artificial para responder las preguntas siguientes y anota en un bloque de código las órdenes utilizadas. Puedes hacerlo con instrucciones de Bash o de R, pero R necesitará cargar en memoria el archivo entero, lo que no sería muy práctico si se tratara de un archivo 10 o 50 veces mayor.</p>
-</section>
-<section id="ejercicio-1" class="level2">
-<h2 class="anchored" data-anchor-id="ejercicio-1">Ejercicio 1</h2>
+<div class="callout callout-style-default callout-note no-icon callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Ejercicio 1
+</div>
+</div>
+<div class="callout-body-container callout-body">
 <p><strong>¿Cuántas secuencias contiene el archivo?</strong></p>
-<pre class="{bash}"><code>zcat ../../data/At4.10.fa.gz | grep -c &quot;^&gt;&quot;</code></pre>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">zcat</span> ../../data/At4.10.fa.gz <span class="kw">|</span> <span class="fu">grep</span> <span class="at">-c</span> <span class="st">&quot;^&gt;&quot;</span></span></code><button title="Copiar al portapapeles" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>13812</code></pre>
+</div>
+</div>
 <p>En un archivo fasta cada secuencia viene precedida por un &gt;, por lo que si contamos cuantos simbolos &gt; hay, podemos saber el numero de secuencias. Con el comando zcat podemos leer el archivo comprimido sin descomprimirlo en el disco. El resultado da 13812 <strong>¿Qué longitudes mínima, media y máxima tienen las secuencias? ¿Cuál es el número total de bases?</strong></p>
-<pre class="{bash}"><code>zcat ../../data/At4.10.fa.gz | awk &#39;
-/^&gt;/ {
-    if (len &gt; 0) {
-        sum += len;
-        if (min == 0 || len &lt; min) min = len;
-        if (len &gt; max) max = len;
-        count++;
-    }
-    len = 0;
-}
-!/^&gt;/ {
-    # Suma la longitud de las líneas de secuencia
-    len += length($0);
-}
-END {
-    # Procesa la última secuencia del archivo
-    if (len &gt; 0) {
-        sum += len;
-        if (min == 0 || len &lt; min) min = len;
-        if (len &gt; max) max = len;
-        count++;
-    }
-    print &quot;Secuencias totales: &quot; count;
-    print &quot;Longitud mínima: &quot; min;
-    print &quot;Longitud máxima: &quot; max;
-    print &quot;Longitud media: &quot; sum/count;
-    print &quot;Total de bases: &quot; sum;
-}&#39;</code></pre>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">zcat</span> ../../data/At4.10.fa.gz <span class="kw">|</span> <span class="fu">awk</span> <span class="st">&#39;</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="st">/^&gt;/ {</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="st">    if (len &gt; 0) {</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="st">        sum += len;</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="st">        if (min == 0 || len &lt; min) min = len;</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="st">        if (len &gt; max) max = len;</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="st">        count++;</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a><span class="st">    }</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="st">    len = 0;</span></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a><span class="st">!/^&gt;/ {</span></span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a><span class="st">    # Suma la longitud de las líneas de secuencia</span></span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a><span class="st">    len += length($0);</span></span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a><span class="st">END {</span></span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a><span class="st">    # Procesa la última secuencia del archivo</span></span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a><span class="st">    if (len &gt; 0) {</span></span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a><span class="st">        sum += len;</span></span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a><span class="st">        if (min == 0 || len &lt; min) min = len;</span></span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a><span class="st">        if (len &gt; max) max = len;</span></span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a><span class="st">        count++;</span></span>
+<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a><span class="st">    }</span></span>
+<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a><span class="st">    print &quot;Secuencias totales: &quot; count;</span></span>
+<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a><span class="st">    print &quot;Longitud mínima: &quot; min;</span></span>
+<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a><span class="st">    print &quot;Longitud máxima: &quot; max;</span></span>
+<span id="cb3-26"><a href="#cb3-26" aria-hidden="true" tabindex="-1"></a><span class="st">    print &quot;Longitud media: &quot; sum/count;</span></span>
+<span id="cb3-27"><a href="#cb3-27" aria-hidden="true" tabindex="-1"></a><span class="st">    print &quot;Total de bases: &quot; sum;</span></span>
+<span id="cb3-28"><a href="#cb3-28" aria-hidden="true" tabindex="-1"></a><span class="st">}&#39;</span></span></code><button title="Copiar al portapapeles" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Secuencias totales: 13812
+Longitud mínima: 2942
+Longitud máxima: 59075
+Longitud media: 18143.6
+Total de bases: 250599484</code></pre>
+</div>
+</div>
 <p>Ahora utiliza un script de awk, que esta diseñado para leer un archivo de texto linea por linea de forma automatica, sin tener que programar el bucle de lectura La longitud minima es 2942, la maxima es 59075 y la media 18143.6 El número total de bases es 250599484</p>
 <p><strong>Si se estimara que el genoma a ensamblar fuera de sólo 19 millones de bases, ¿cuál sería la cobertura esperada?</strong> Como ya sabemos el número total de bases:</p>
-<pre class="{bash}"><code>echo &quot;scale=2; 250599484/19000000&quot; | bc</code></pre>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="bu">echo</span> <span class="st">&quot;scale=2; 250599484/19000000&quot;</span> <span class="kw">|</span> <span class="fu">bc</span></span></code><button title="Copiar al portapapeles" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>13.18</code></pre>
+</div>
+</div>
 <p>La cobertura es de 13.18. scale=2 es para que muestre el resultado con 2 decimales.</p>
+</div>
+</div>
 </section>
 <section id="ensamblaje" class="level2">
 <h2 class="anchored" data-anchor-id="ensamblaje">ENSAMBLAJE</h2>
 <p>El programa hifiasm produce varios archivos de salida. Para tener la carpeta de trabajo ordenada, es recomendable crear un subcarpeta donde poder guardarlos. Si fuéramos a probar más de una estrategia de ensamblado, guardaríamos los resultados de cada intento en una carpeta diferente, que podríamos nombrar asm1, asm2, etc. Aunque sólo realicemos un ensamblaje, crearemos la carpeta asm1 para guardar los resultados en ella.</p>
-<pre class="{bash}"><code># Con la ejecución condicional nos ahorramos algún mensaje de error:
-if [ ! -d asm1 ]; then mkdir asm1; fi</code></pre>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Con la ejecución condicional nos ahorramos algún mensaje de error:</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="bu">[</span> <span class="ot">!</span> <span class="ot">-d</span> asm1 <span class="bu">]</span><span class="kw">;</span> <span class="cf">then</span> <span class="fu">mkdir</span> asm1<span class="kw">;</span> <span class="cf">fi</span></span></code><button title="Copiar al portapapeles" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
 <p>El ensamblaje de estas lecturas puede durar unos minutos. No queremos tener que ejecutarlo cada vez que compilamos el documento de Quarto. Tenemos dos opciones: o bien usamos la directriz #| cache: true al principio del bloque de código o bien controlamos directamente la ejecución condicional con Bash. Si usamos el método que ofrece Quarto, aparecerá una nueva carpeta que guarda resultados previos y que estaría bien incluir en el repositorio de Git. Yo prefiero usar Bash:</p>
-<pre class="{bash}"><code>. ~/.bashrc
-echo $PATH
-if [ ! -e asm1/At4.bp.p_ctg.gfa ]; then
-   ~/bin/hifiasm/hifiasm -o asm1/At4 -t 2 -f 0 ../../data/At4.10.fa.gz 2&gt; asm1/hifiasm.log
-fi</code></pre>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="bu">.</span> ~/.bashrc</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="bu">echo</span> <span class="va">$PATH</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="bu">[</span> <span class="ot">!</span> <span class="ot">-e</span> asm1/At4.bp.p_ctg.gfa <span class="bu">]</span><span class="kw">;</span> <span class="cf">then</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>   <span class="ex">~/bin/hifiasm/hifiasm</span> <span class="at">-o</span> asm1/At4 <span class="at">-t</span> 2 <span class="at">-f</span> 0 ../../data/At4.10.fa.gz <span class="dv">2</span><span class="op">&gt;</span> asm1/hifiasm.log</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a><span class="cf">fi</span></span></code><button title="Copiar al portapapeles" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/snap/bin:/usr/lib/rstudio-server/bin/quarto/bin:/usr/lib/rstudio-server/bin/postback</code></pre>
+</div>
+</div>
 <p>Las opciones significan lo siguiente:</p>
 <p>-o asm1/At4: usa el prefijo asm1/At4 para los archivos de salida. -t 2: usa dos procesadores. Por defecto usaría uno. -f 0: inhabilita el uso de un filtro de Bloom (Melsted and Pritchard 2011) durante la corrección de errores, que ocuparía 16 Gb de memoria. ../../data/At4.10.fa.gz: archivo con los datos de partida. 2&gt; asm1/hifiasm.log: guarda los numerosos mensajes que hifiasm envía al error estándar en un archivo asm1/hifiasm.log. Esto evita que esos mensajes se acumulen en el informe HTML.</p>
 <p>para ejecutar hifiasm podemos añadir antes del bloque HF=~/bin/hifiasm/hifiasm o export PATH=~/bin/hifiasm/hifiasm :$PATH</p>
-</section>
-<section id="ejercicio-2" class="level2">
-<h2 class="anchored" data-anchor-id="ejercicio-2">Ejercicio 2</h2>
+<div class="callout callout-style-default callout-note no-icon callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Ejercicio 2
+</div>
+</div>
+<div class="callout-body-container callout-body">
 <p>Consulta la ayuda de hifiasm (hifiasm -h) y contesta las preguntas siguientes:</p>
-<pre class="{bash}"><code>HF=~/bin/hifiasm/hifiasm
-
-$HF -h</code></pre>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="va">HF</span><span class="op">=</span>~/bin/hifiasm/hifiasm</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="va">$HF</span> <span class="at">-h</span></span></code><button title="Copiar al portapapeles" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Usage: hifiasm [options] &lt;in_1.fq&gt; &lt;in_2.fq&gt; &lt;...&gt;
+Options:
+  Input/Output:
+    -o STR       prefix of output files [hifiasm.asm]
+    -t INT       number of threads [1]
+    -h           show help information
+    --version    show version number
+  Preset options:
+    --ont        assemble Oxford Nanopore reads
+  Overlap/Error correction:
+    -k INT       k-mer length (must be &lt;64) [51]
+    -w INT       minimizer window size [51]
+    -f INT       number of bits for bloom filter; 0 to disable [37]
+    -D FLOAT     drop k-mers occurring &gt;FLOAT*coverage times [5.0]
+    -N INT       consider up to max(-D*coverage,-N) overlaps for each oriented read [100]
+    -r INT       round of correction [3]
+    -z INT       length of adapters that should be removed [0]
+    --max-kocc   INT
+                 employ k-mers occurring &lt;INT times to rescue repetitive overlaps [2000]
+    --hg-size    INT(k, m or g)
+                 estimated haploid genome size used for inferring read coverage [auto]
+  Assembly:
+    -a INT       round of assembly cleaning [4]
+    -m INT       pop bubbles of &lt;INT in size in contig graphs [10000000]
+    -p INT       pop bubbles of &lt;INT in size in unitig graphs [0]
+    -n INT       remove tip unitigs composed of &lt;=INT reads [3]
+    -x FLOAT     max overlap drop ratio [0.8]
+    -y FLOAT     min overlap drop ratio [0.2]
+    -i           ignore saved read correction and overlaps
+    -u           post-join step for contigs which may improve N50; 0 to disable; 1 to enable
+                 [1] and [1] in default for the UL+HiFi assembly and the HiFi assembly, respectively
+    --hom-cov    INT
+                 homozygous read coverage [auto]
+    --lowQ       INT
+                 output contig regions with &gt;=INT% inconsistency in BED format; 0 to disable [70]
+    --b-cov      INT
+                 break contigs at positions with &lt;INT-fold coverage; work with &#39;--m-rate&#39;; 0 to disable [0]
+    --h-cov      INT
+                 break contigs at positions with &gt;INT-fold coverage; work with &#39;--m-rate&#39;; -1 to disable [-1]
+    --m-rate     FLOAT
+                 break contigs at positions with &lt;=FLOAT*coverage exact overlaps;
+                 only work with &#39;--b-cov&#39; or &#39;--h-cov&#39;[0.75]
+    --primary    output a primary assembly and an alternate assembly
+    --ctg-n      INT
+                 remove tip contigs composed of &lt;=INT reads [3]
+  Trio-partition:
+    -1 FILE      hap1/paternal k-mer dump generated by &quot;yak count&quot; []
+    -2 FILE      hap2/maternal k-mer dump generated by &quot;yak count&quot; []
+    -3 FILE      list of hap1/paternal read names []
+    -4 FILE      list of hap2/maternal read names []
+    -c INT       lower bound of the binned k-mer&#39;s frequency [2]
+    -d INT       upper bound of the binned k-mer&#39;s frequency [5]
+    --t-occ      INT
+                 forcedly remove unitigs with &gt;INT unexpected haplotype-specific reads;
+                 ignore graph topology; [60]
+    --trio-dual  utilize homology information to correct trio phasing errors
+  Purge-dups:
+    -l INT       purge level. 0: no purging; 1: light; 2/3: aggressive [0 for trio; 3 for unzip]
+    -s FLOAT     similarity threshold for duplicate haplotigs in read-level [0.75 for -l1/-l2, 0.55 for -l3]
+    -O INT       min number of overlapped reads for duplicate haplotigs [1]
+    --purge-max  INT
+                 coverage upper bound of Purge-dups [auto]
+    --n-hap      INT
+                 number of haplotypes [2]
+  Hi-C-partition:
+    --h1 FILEs   file names of Hi-C R1  [r1_1.fq,r1_2.fq,...]
+    --h2 FILEs   file names of Hi-C R2  [r2_1.fq,r2_2.fq,...]
+    --seed INT   RNG seed [11]
+    --s-base     FLOAT
+                 similarity threshold for homology detection in base-level;
+                 -1 to disable [0.5]; -s for read-level (see &lt;Purge-dups&gt;)
+    --n-weight   INT
+                 rounds of reweighting Hi-C links [3]
+    --n-perturb  INT
+                 rounds of perturbation [10000]
+    --f-perturb  FLOAT
+                 fraction to flip for perturbation [0.1]
+    --l-msjoin   INT
+                 detect misjoined unitigs of &gt;=INT in size; 0 to disable [500000]
+  Ultra-Long-integration:
+    --ul FILEs   file names of Ultra-Long reads [r1.fq,r2.fq,...]
+    --ul-rate    FLOAT
+                 error rate of Ultra-Long reads [0.2]
+    --ul-tip     INT
+                 remove tip unitigs composed of &lt;=INT reads for the UL assembly [6]
+    --path-max   FLOAT
+                 max path drop ratio [0.6]; higher number may make the assembly cleaner
+                 but may lead to more misassemblies
+    --path-min   FLOAT
+                 min path drop ratio [0.2]; higher number may make the assembly cleaner
+                 but may lead to more misassemblies
+    --ul-cut     INT
+                 filter out &lt;INT UL reads during the UL assembly [0]
+  Dual-Scaffolding:
+    --dual-scaf  output scaffolding
+    --scaf-gap   INT
+                 max gap size for scaffolding [3000000]
+  Telomere-identification:
+    --telo-m     STR
+                 telomere motif at 5&#39;-end; CCCTAA for human [NULL]
+    --telo-p     INT
+                 non-telomeric penalty [1]
+    --telo-d     INT
+                 max drop [2000]
+    --telo-s     INT
+                 min score for telomere reads [500]
+  ONT simplex assembly (beta):
+    --ont        assemble ONT simplex reads in fastq format
+    --chem-c     INT
+                 detect chimeric reads with &lt;=INT other reads support [1]
+    --chem-f     INT
+                 length of flanking regions for chimeric read detection [256]
+    --rl-cut     INT
+                 filter out ONT simplex reads shorter than &lt;INT&gt; for assembly [1000]
+    --sc-cut     INT
+                 filter out ONT simplex reads with a mean base quality score below &lt;INT&gt; [10]
+Example: ./hifiasm -o NA12878.asm -t 32 NA12878.fq.gz
+See `https://hifiasm.readthedocs.io/en/latest/&#39; or `man ./hifiasm.1&#39; for complete documentation.</code></pre>
+</div>
+</div>
 <p><strong>¿Los parámetros corresponden al ensamblaje de un genoma haploide o diploide?</strong> En la carpeta asm1 hay hap1 y hap2, que corresponde con los contigs del haplotipo 1 y del haplotipo 2, por lo que corresponde al ensamblaje de un genoma diploide</p>
 <p><strong>¿Qué nivel de eliminación de duplicaciones hemos aplicado? (El paso de eliminar duplicaciones sirve para que las zonas de alta heterocigosidad no sean ensambladas como contigs diferentes).</strong></p>
-<pre class="{bash}"><code>find . -name &quot;hifiasm.log&quot;</code></pre>
-<pre class="{bash}"><code>grep -i &quot;purge&quot; ./asm1/hifiasm.log</code></pre>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">find</span> . <span class="at">-name</span> <span class="st">&quot;hifiasm.log&quot;</span></span></code><button title="Copiar al portapapeles" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>./asm1/hifiasm.log</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">grep</span> <span class="at">-i</span> <span class="st">&quot;purge&quot;</span> ./asm1/hifiasm.log</span></code><button title="Copiar al portapapeles" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[M::purge_dups] homozygous read coverage threshold: 12
+[M::purge_dups] purge duplication coverage threshold: 15
+[M::purge_dups] homozygous read coverage threshold: 12
+[M::purge_dups] purge duplication coverage threshold: 15</code></pre>
+</div>
+</div>
 <p>Como no esta especificado nada, esta aplicando el nivel 3 de eliminacion de duplicaciones</p>
 <p><strong>Si tuvieramos lecturas ultra-largas, ¿con qué opción o argumento añadiríamos esa información?</strong> Hay que utilizar el argumento –ul</p>
+</div>
+</div>
 </section>
 <section id="evaluación-del-resultado" class="level2">
 <h2 class="anchored" data-anchor-id="evaluación-del-resultado">Evaluación del resultado</h2>
-</section>
-<section id="ejercicio-3" class="level2">
-<h2 class="anchored" data-anchor-id="ejercicio-3">Ejercicio 3</h2>
+<div class="callout callout-style-default callout-note no-icon callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Ejercicio 3
+</div>
+</div>
+<div class="callout-body-container callout-body">
 <p>Consulta la descripción de los archivos de salida que encontrarás en este enlace y contesta las preguntas siguientes:</p>
 <p><strong>¿Dónde están las secuencias que componen el ensamblaje?</strong> En los GFA, en todos menos en los noseq.gfa, que son sin secuencias</p>
 <p><strong>En los archivos .gfa, ¿qué son las líneas que empiezan por ‘A’?</strong> Incluye la información de las lecturas que se han usado para construir cada contig. Las columnas aparecen en el orden que viene en la pagina web del enlace.</p>
 <p><strong>¿Qué información tiene los archivos .bed?</strong> Incluye las coordenadas de las regiones con baja calidad.</p>
 <p><strong>¿Cuál es la cobertura media estimada de las secuencias homocigotas?</strong> La cobertura se puede ver en el archivo hifiasm como [M::purge_dups] homozygous read coverage threshold: X. En este caso es 12. <strong>¿Y la de las heterocigotas?</strong> En un gráfico de k-meros, para muestras heterocigotas debería haber dos picos. El pico menor se encuentra alrededor de la cobertura heterocigota.</p>
+</div>
+</div>
 </section>
 <section id="render" class="level2">
 <h2 class="anchored" data-anchor-id="render">Render</h2>
 <p>Al renderizar aparece un error: Jupyter is not available in this Python instalattion. Install with python -m pip install jupyter Para solucionarlo hay que instalar jupyter desde el terminal de bash:</p>
-<pre class="{bash}"><code>sudo apt install jupyter</code></pre>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> apt install jupyter</span></code><button title="Copiar al portapapeles" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>sudo: a terminal is required to read the password; either use the -S option to read from standard input or configure an askpass helper
+sudo: a password is required</code></pre>
+</div>
+</div>
 </section>
 
 </main>
@@ -3207,12 +3441,12 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     // flash "checked"
     button.classList.add('code-copy-button-checked');
     var currentTitle = button.getAttribute("title");
-    button.setAttribute("title", "Copied!");
+    button.setAttribute("title", "Copiado");
     let tooltip;
     if (window.bootstrap) {
       button.setAttribute("data-bs-toggle", "tooltip");
       button.setAttribute("data-bs-placement", "left");
-      button.setAttribute("data-bs-title", "Copied!");
+      button.setAttribute("data-bs-title", "Copiado");
       tooltip = new bootstrap.Tooltip(button, 
         { trigger: "manual", 
           customClass: "code-copy-button-tooltip",
