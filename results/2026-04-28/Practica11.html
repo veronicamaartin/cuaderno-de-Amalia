@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="es" xml:lang="es"><head>
 
 <meta charset="utf-8">
 <meta name="generator" content="quarto-1.6.42">
@@ -18,6 +18,40 @@ ul.task-list{list-style: none;}
 ul.task-list li input[type="checkbox"] {
 width: 0.8em;
 margin: 0 0.8em 0.2em -1em;  vertical-align: middle;
+}
+
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+{ counter-reset: source-line 0; }
+pre.numberSource code > span
+{ position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+{ content: counter(source-line);
+position: relative; left: -1em; text-align: right; vertical-align: baseline;
+border: none; display: inline-block;
+-webkit-touch-callout: none; -webkit-user-select: none;
+-khtml-user-select: none; -moz-user-select: none;
+-ms-user-select: none; user-select: none;
+padding: 0 4px; width: 4em;
+}
+pre.numberSource { margin-left: 3em; padding-left: 4px; }
+div.sourceCode
+{ }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
 </style>
 
@@ -3061,6 +3095,12 @@ vertical-align: -.125em;
 <div class="quarto-title-meta">
 
     
+    <div>
+    <div class="quarto-title-meta-heading">Última actualización:</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">10 de mayo de 2026</p>
+    </div>
+  </div>
   
     
   </div>
@@ -3077,64 +3117,132 @@ vertical-align: -.125em;
 </section>
 <section id="resultados" class="level2">
 <h2 class="anchored" data-anchor-id="resultados">Resultados</h2>
-<p>Modificación de los nombres de las proteínas Al descargar las proteínas del cromosoma 4 de A. thaliana, el archivo FASTA contiene cabeceras demasiado extensas. Para facilitar el trabajo de GALBA vamos a modificar las cabeceras o nombres de las secuencias. ## Ejercicio 1 <strong>Sabiendo que una forma de hacerlo es la siguiente, incluye la orden en un bloque de Bash de tu documento de Quarto de tal manera que el archivo de entrada esté en tu carpeta data y el de salida en la misma carpeta de trabajo de la práctica actual, y además, que sólo se ejecute si el archivo de salida proteinas.fasta no existe.</strong></p>
-<pre class="{bash}"><code>if [ ! -f &quot;proteinas.fasta&quot; ]; then
-  awk &#39;(/^&gt;/){split($1, A, /\|/); print &quot;&gt;&quot; A[2]}(/^[^&gt;]/){print $0}&#39; ../../data/uniprotkb_proteome_UP000006548_AND_prot_2026_04_28.fasta &gt; proteinas.fasta
-fi
-</code></pre>
+<p>Modificación de los nombres de las proteínas Al descargar las proteínas del cromosoma 4 de A. thaliana, el archivo FASTA contiene cabeceras demasiado extensas. Para facilitar el trabajo de GALBA vamos a modificar las cabeceras o nombres de las secuencias.</p>
+<div class="callout callout-style-default callout-note no-icon callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Ejercicio 1
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p><strong>Sabiendo que una forma de hacerlo es la siguiente, incluye la orden en un bloque de Bash de tu documento de Quarto de tal manera que el archivo de entrada esté en tu carpeta data y el de salida en la misma carpeta de trabajo de la práctica actual, y además, que sólo se ejecute si el archivo de salida proteinas.fasta no existe.</strong></p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="bu">[</span> <span class="ot">!</span> <span class="ot">-f</span> <span class="st">&quot;proteinas.fasta&quot;</span> <span class="bu">]</span><span class="kw">;</span> <span class="cf">then</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">awk</span> <span class="st">&#39;(/^&gt;/){split($1, A, /\|/); print &quot;&gt;&quot; A[2]}(/^[^&gt;]/){print $0}&#39;</span> ../../data/uniprotkb_proteome_UP000006548_AND_prot_2026_04_28.fasta <span class="op">&gt;</span> proteinas.fasta</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="cf">fi</span></span></code><button title="Copiar al portapapeles" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
 <p>Análisis de los resultados de RepeatModeler</p>
-</section>
-<section id="ejercicio-2" class="level2">
-<h2 class="anchored" data-anchor-id="ejercicio-2">Ejercicio 2</h2>
+</div>
+</div>
+<div class="callout callout-style-default callout-note no-icon callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Ejercicio 2
+</div>
+</div>
+<div class="callout-body-container callout-body">
 <p>Explora los resultados de RepeatModeler y trata de contestar las preguntas siguientes.</p>
 <p><strong>¿Cuántas familias de elementos transponibles se han encontrado?</strong></p>
-<pre class="{bash}"><code>grep &#39;&gt;&#39; At4-families.fa | wc -l</code></pre>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">grep</span> <span class="st">&#39;&gt;&#39;</span> At4-families.fa <span class="kw">|</span> <span class="fu">wc</span> <span class="at">-l</span></span></code><button title="Copiar al portapapeles" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>grep: At4-families.fa: No such file or directory
+0</code></pre>
+</div>
+</div>
 <p><strong>¿Cuánto duró la ejecución del programa?</strong> 1 hora, 2 minutos y 16 minutos</p>
 <p><strong>¿Cuál dirías que es el archivo de salida más importante?</strong> El consensi.fa</p>
+</div>
+</div>
 </section>
 <section id="suavizar-la-máscara" class="level2">
 <h2 class="anchored" data-anchor-id="suavizar-la-máscara">Suavizar la máscara</h2>
 <p>Encontrarás la carpeta (comprimida) de resultados de RepeatMasker en el aula virtual. Descárgala y descomprimela en la carpeta de trabajo actual. La versión enmascarada tiene una máscara dura (RepeatMasker ha sustituído todos los elementos trasponibles y repeticiones por Ns), con lo que se ha perdido la información de la secuencia original en esas regiones. El programa GALBA recomienda partir de un ensamblaje con máscara suave, donde las regiones repetitivas están marcadas con letra minúscula. Para convertir la máscara dura en una máscara suave, utilizaremos bedtools.</p>
-</section>
-<section id="ejercicio-3" class="level2">
-<h2 class="anchored" data-anchor-id="ejercicio-3">Ejercicio 3</h2>
+<div class="callout callout-style-default callout-note no-icon callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Ejercicio 3
+</div>
+</div>
+<div class="callout-body-container callout-body">
 <p><strong>Instala el programa bedtools siguiendo las instrucciones oportunas para tu sistema en la página oficial Utiliza el ensamblaje original como archivo FASTA de entrada y el archivo GFF que ha producido RepetaMasker como coordenadas de las regiones a enmascarar. Lee el manual de bedtools maskfasta en este enlace y genera el ensamblaje con máscara suave llamado At4.soft.fa.</strong></p>
-<pre class="{bash}"><code>if [ ! -e At4.soft.fa ]; then
-  bedtools maskfasta \
-    -soft \
-    -fi ../2026-04-16/asm1/At4.fa \
-    -fo At4.soft.fa \
-    -bed RM01/At4.fa.out.gff
-fi
-
-
-</code></pre>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="bu">[</span> <span class="ot">!</span> <span class="ot">-e</span> At4.soft.fa <span class="bu">]</span><span class="kw">;</span> <span class="cf">then</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  <span class="ex">bedtools</span> maskfasta <span class="dt">\</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">-soft</span> <span class="dt">\</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">-fi</span> ../2026-04-16/asm1/At4.fa <span class="dt">\</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">-fo</span> At4.soft.fa <span class="dt">\</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">-bed</span> RM01/At4.fa.out.gff</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="cf">fi</span></span></code><button title="Copiar al portapapeles" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Error in running command bash</code></pre>
+</div>
+</div>
+</div>
+</div>
 </section>
 <section id="galba" class="level2">
 <h2 class="anchored" data-anchor-id="galba">GALBA</h2>
 <p>Para ejecutar GALBA ha sido necesario crear algunas variables de entorno que indican donde puede GALBA encontrar un par de ejecutables más. Para facilitar la reproducibilidad, este tipo de definiciones deben aparecer al principio del bloque, donde son más visibles, para que sean fácilmente modificadas cuando las órdenes vayan a ejecutarse en otro ordenador.</p>
-<pre class="{bash}"><code>export TSEBRA_PATH=/home/joiglu/bin/TSEBRA/bin/
-export MINIPROTHINT_PATH=/home/joiglu/bin/miniprothint/
-
-galba.pl --species=&quot;Arabidopsis thaliana&quot; \
-         --genome=At4.soft.fa \
-         --prot_seq=proteinas.fasta</code></pre>
-</section>
-<section id="ejercicio-4" class="level2">
-<h2 class="anchored" data-anchor-id="ejercicio-4">Ejercicio 4</h2>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="bu">export</span> <span class="va">TSEBRA_PATH</span><span class="op">=</span>/home/joiglu/bin/TSEBRA/bin/</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="bu">export</span> <span class="va">MINIPROTHINT_PATH</span><span class="op">=</span>/home/joiglu/bin/miniprothint/</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="ex">galba.pl</span> <span class="at">--species</span><span class="op">=</span><span class="st">&quot;Arabidopsis thaliana&quot;</span> <span class="dt">\</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>         <span class="at">--genome</span><span class="op">=</span>At4.soft.fa <span class="dt">\</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>         <span class="at">--prot_seq</span><span class="op">=</span>proteinas.fasta</span></code><button title="Copiar al portapapeles" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Error in running command bash</code></pre>
+</div>
+</div>
+<div class="callout callout-style-default callout-note no-icon callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Ejercicio 4
+</div>
+</div>
+<div class="callout-body-container callout-body">
 <p><strong>Incluye en tu documento de Quarto un bloque de código (pero no ejecutable, con la opción eval: false) como el anterior, donde los caminos TSERBA y a MINIPROTHINT se correspondan con tu propia carpeta bin, aunque no los tengas instalados.</strong></p>
-<pre class="{bash}"><code>eval: false 
-export TSEBRA_PATH=/home/amalia/bin/TSEBRA/bin/
-export MINIPROTHINT_PATH=/home/amalia/bin/miniprothint/
-
-galba.pl --species=&quot;Arabidopsis thaliana&quot; \
-         --genome=At4.soft.fa \
-         --prot_seq=proteinas.fasta</code></pre>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="ex">eval:</span> false </span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="bu">export</span> <span class="va">TSEBRA_PATH</span><span class="op">=</span>/home/amalia/bin/TSEBRA/bin/</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="bu">export</span> <span class="va">MINIPROTHINT_PATH</span><span class="op">=</span>/home/amalia/bin/miniprothint/</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a><span class="ex">galba.pl</span> <span class="at">--species</span><span class="op">=</span><span class="st">&quot;Arabidopsis thaliana&quot;</span> <span class="dt">\</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>         <span class="at">--genome</span><span class="op">=</span>At4.soft.fa <span class="dt">\</span></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>         <span class="at">--prot_seq</span><span class="op">=</span>proteinas.fasta</span></code><button title="Copiar al portapapeles" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Error in running command bash</code></pre>
+</div>
+</div>
 <p>De esta forma, cualquiera que ejecute el script puede modificar el PATH</p>
-</section>
-<section id="ejercicio-5" class="level2">
-<h2 class="anchored" data-anchor-id="ejercicio-5">Ejercicio 5</h2>
+</div>
+</div>
+<div class="callout callout-style-default callout-note no-icon callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Ejercicio 5
+</div>
+</div>
+<div class="callout-body-container callout-body">
 <p><strong>Échales un vistazo a los archivos de salida de GALBA y trata de sacar algo en claro.</strong> Los que empiezan con galba son las salidas propias del sistema. El archivo mas importante es galba.gtf, que es la anotacion del ensamblaje del cromosoma 4 de Arabidopsis. No hay regiones no traducidas, porque no le hemos dado datos de expresion, sino de proteinas</p>
+</div>
+</div>
 </section>
 
 </main>
@@ -3182,12 +3290,12 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     // flash "checked"
     button.classList.add('code-copy-button-checked');
     var currentTitle = button.getAttribute("title");
-    button.setAttribute("title", "Copied!");
+    button.setAttribute("title", "Copiado");
     let tooltip;
     if (window.bootstrap) {
       button.setAttribute("data-bs-toggle", "tooltip");
       button.setAttribute("data-bs-placement", "left");
-      button.setAttribute("data-bs-title", "Copied!");
+      button.setAttribute("data-bs-title", "Copiado");
       tooltip = new bootstrap.Tooltip(button, 
         { trigger: "manual", 
           customClass: "code-copy-button-tooltip",

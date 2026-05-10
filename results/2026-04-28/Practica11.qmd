@@ -1,8 +1,18 @@
 ---
 title: "Practica 11"
+lang: es
+date: today
+execute: 
+  eval: true
+  error: true
+engine: knitr
+bibliography: ../../doc/references.bib
+language:
+   title-block-published: "Última actualización:"
+   section-title-references: "Bibliografía"
 format:
-  html: 
-    embed-resources: true
+   html:
+      embed-resources: true
 ---
 
 ## Introducción
@@ -13,7 +23,10 @@ Las evidencias que usaremos para encontrar los genes són secuencias de proteín
 
 ## Resultados
 
-Modificación de los nombres de las proteínas Al descargar las proteínas del cromosoma 4 de A. thaliana, el archivo FASTA contiene cabeceras demasiado extensas. Para facilitar el trabajo de GALBA vamos a modificar las cabeceras o nombres de las secuencias. 
+Modificación de los nombres de las proteínas Al descargar las proteínas del cromosoma 4 de A. thaliana, el archivo FASTA contiene cabeceras demasiado extensas. Para facilitar el trabajo de GALBA vamos a modificar las cabeceras o nombres de las secuencias.
+
+:::{.callout-note icon=false}
+
 ## Ejercicio 1 
 **Sabiendo que una forma de hacerlo es la siguiente, incluye la orden en un bloque de Bash de tu documento de Quarto de tal manera que el archivo de entrada esté en tu carpeta data y el de salida en la misma carpeta de trabajo de la práctica actual, y además, que sólo se ejecute si el archivo de salida proteinas.fasta no existe.**
 
@@ -25,6 +38,9 @@ fi
 ```
 
 Análisis de los resultados de RepeatModeler
+:::
+
+:::{.callout-note icon=false}
 
 ## Ejercicio 2 
 Explora los resultados de RepeatModeler y trata de contestar las preguntas siguientes.
@@ -38,10 +54,14 @@ grep '>' At4-families.fa | wc -l
 
 **¿Cuál dirías que es el archivo de salida más importante?**
 El consensi.fa
+:::
+
 
 ## Suavizar la máscara
 
 Encontrarás la carpeta (comprimida) de resultados de RepeatMasker en el aula virtual. Descárgala y descomprimela en la carpeta de trabajo actual. La versión enmascarada tiene una máscara dura (RepeatMasker ha sustituído todos los elementos trasponibles y repeticiones por Ns), con lo que se ha perdido la información de la secuencia original en esas regiones. El programa GALBA recomienda partir de un ensamblaje con máscara suave, donde las regiones repetitivas están marcadas con letra minúscula. Para convertir la máscara dura en una máscara suave, utilizaremos bedtools.
+
+:::{.callout-note icon=false}
 
 ## Ejercicio 3 
 **Instala el programa bedtools siguiendo las instrucciones oportunas para tu sistema en la página oficial 
@@ -59,6 +79,9 @@ fi
 
 
 ```
+
+:::
+
 ## GALBA
 Para ejecutar GALBA ha sido necesario crear algunas variables de entorno que indican donde puede GALBA encontrar un par de ejecutables más. Para facilitar la reproducibilidad, este tipo de definiciones deben aparecer al principio del bloque, donde son más visibles, para que sean fácilmente modificadas cuando las órdenes vayan a ejecutarse en otro ordenador.
 
@@ -70,6 +93,8 @@ galba.pl --species="Arabidopsis thaliana" \
          --genome=At4.soft.fa \
          --prot_seq=proteinas.fasta
 ```
+
+:::{.callout-note icon=false}
 
 ## Ejercicio 4
 **Incluye en tu documento de Quarto un bloque de código (pero no ejecutable, con la opción eval: false) como el anterior, donde los caminos TSERBA y a MINIPROTHINT se correspondan con tu propia carpeta bin, aunque no los tengas instalados.**
@@ -84,7 +109,12 @@ galba.pl --species="Arabidopsis thaliana" \
 ```
 
 De esta forma, cualquiera que ejecute el script puede modificar el PATH
+:::
+
+:::{.callout-note icon=false}
 
 ## Ejercicio 5
 **Échales un vistazo a los archivos de salida de GALBA y trata de sacar algo en claro.**
 Los que empiezan con galba son las salidas propias del sistema. El archivo mas importante es galba.gtf, que es la anotacion del ensamblaje del cromosoma 4 de Arabidopsis. No hay regiones no traducidas, porque no le hemos dado datos de expresion, sino de proteinas
+
+:::
