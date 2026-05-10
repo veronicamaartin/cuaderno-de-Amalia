@@ -1,8 +1,18 @@
 ---
 title: "Continuación Práctica 9"
+lang: es
+date: today
+execute: 
+  eval: true
+  error: true
+engine: knitr
+bibliography: ../../doc/references.bib
+language:
+   title-block-published: "Última actualización:"
+   section-title-references: "Bibliografía"
 format:
-  html: 
-    embed-resources: true
+   html:
+      embed-resources: true
 ---
 
 ## Objetivos
@@ -24,6 +34,9 @@ Con la funcion image() podemos generar una imagen del alineamiento.
 glance(mtdna)
 image(mtdna)
 ```
+
+:::{.callout-note icon=false}
+
 ## Ejercicio 1
 **¿Puedes confirmar el número de secuencias? ¿Qué longitud tiene el alineamiento? ¿Qué función usarías para extraer los nombres de las secuencias?**
 El número de secuencias se puede obtener con la función glance(), te dice que hay 42 secuencias en la columna nseq y 16603 que sera tambien la longitud del alineamiento.
@@ -31,6 +44,8 @@ Para extraer los nombres de las secuencias utilizamos la función names(mtdna)
 ```{r}
 names(mtdna)
 ```
+:::
+
 
 ## ARBOLES BASADOS EN DISTANCIAS
 Los árboles NJ y UPGMA pueden proporcionar una idea rápida de cómo podría ser la relación filogenética entre las secuencias. Como métodos basados en distancias que son, necesitamos calcular primero las distancias. Podemos hacerlo en el mismo paso en el que generamos el árbol: nj(dist.ml(mtdna)). O bien, podemos hacerlo en dos pasos: guardar la matriz de distancias en un objeto de clase dist, y después generar los árboles.
@@ -44,6 +59,8 @@ distancias <- dist.ml(mtdna, model = 'F81')
 mt_nj    <- NJ(distancias)
 mt_upgma <- upgma(distancias)
 ```
+
+:::{.callout-note icon=false}
 
 ## Ejercicio 2
 **¿De qué clase son los objetos mt_nj y mt_upgma?**
@@ -84,6 +101,8 @@ Añade una barra horizontal dnado la escala de la longitud de la rama
 help("axisPhylo")
 ```
 Añade una escala de los ejes
+:::
+
 
 ## ENRAIZAR
 El árbol mt_nj no está enraizado (puedes comprobarlo con is.rooted()). Tenemos un par de opciones para enraizarlo. Una opción es root(), función en la que debemos especificar o bien el outgroup o bien el nodo interno en el que queremos situar la raíz. Para saber cómo identificar los nodos internos, puedes invocar nodelabels() después de haber usado plot(mt_nj). Por ejemplo, en mi caso, el nodo 75 parece ser el ancestro entre gorilas y chimpancés, y por tanto también es ancestro de los humanos. Por tanto:
@@ -133,6 +152,8 @@ fechas
 mt_nj_rtt <- rtt(mt_nj, tip.dates = fechas, objective = 'rms')
 ```
 
+:::{.callout-note icon=false}
+
 ## Ejercicio 3
 
 **¿Se corresponden bien las distancias evolutivas estimadas con las dataciones?¿Qué secuencias crees que se ajustan menos a su supuesta edad?¿Qué razones puede haber para que la edad de una secuencia no se corresponda con la cantidad de cambios que ha acumulado?**
@@ -142,7 +163,7 @@ mt_nj_rtt <- rtt(mt_nj, tip.dates = fechas, objective = 'rms')
 plot(mt_nj_rtt, align.tip.label = TRUE, show.tip.label = TRUE)
 ```
 H. heidelbergensis, su rama en el arbol sequeda bastante mas atras que otros, no es normal que los denisovanos tengan una rama mas larga, incluso pareciendo contemporaneos con los humanos modernos. Esto significa que la funcion rtt busca la mejor correlacion posible entre longitudes de ramas y el tiempo que ha pasado desde que dejaron de existir, es dificil aplicar a la perfeccion el reloj molecular. Es dificil de leer, no es nada obvio. Podemos desconfiar de que la datacion sea correcta, a esas dos muestras de denisovanos les hemos asignado una edad mas antigua que la que le corresponde, igual tienen margenes de error muy grande y no es representativa la media. Las meustras arqueologicas contienen errores, cuando secuencian este DNA arcaico se supone que corrigen estos errores, esta fragmentado pero se puede reconstruir el DNA mitocondrial. Igual el metodo estadistico que han utilizado para corregir los erroes de secuenciacion puede que no haya sido perfecto. esa degradacion del DNA puede producir esa tendencia a alargar las ramas, pero son los datos con los que vamos a trabajar. Eliminaremos la secuencia del gorila porque es muy antigua en comparacion con las otras, puede haber evolucionado a una velocidad diferente. Tambien eliminamos pares o trios de neandertales que son completamente identicos entre ellos. de cada uno de esos grupos nos quedamos con una copia, porque datar las muestras es mucho trabajo y puede que el programa no funcione bien, es mejor tener solo una secuencia representante de cada grupo. 
-
+:::
 
 
 ## Distancias
@@ -168,6 +189,8 @@ La distancia estimada media entre humanos y neandertales se puede obtener como:
 ```{r}
 mean(distMat[modernos, neandertales])
 ```
+
+:::{.callout-note icon=false}
 
 ## Ejercicio 4
 
@@ -213,6 +236,9 @@ mean(d[lower.tri(d)])
 ```{r}
 distCofen <- cophenetic(mt_nj_rooted)
 ```
+:::
+
+:::{.callout-note icon=false}
 
 ## Ejercicio 5
 **¿Cuanto se parecen las distancias estimadas a las distancias cofenéticas?**
@@ -247,6 +273,9 @@ mtdna37 <- mtdna[! grepl('(KX198085|KX198086|KX198082|KX198088|KX198083)',
                          names(mtdna)), ]
 mtdna37
 ```
+:::
+
+:::{.callout-note icon=false}
 
 ## Ejercicio 6
 **serias capaz de crear otro conjunto de datos, mtdna28, que solo contenga secuencias del genero Homo**
@@ -278,6 +307,8 @@ modelos <- modelTest(mtdna36, control = pml.control(trace = 0),
 fit <- as.pml(modelos, 'GTR+G(4)+I')
 fit
 ```
+:::
+
 
 ## Ejercicio 7
 **¿Cuál es el mejor modelo para secuencias solo del genero Homo?**
@@ -286,6 +317,8 @@ fit
 fit <- as.pml(modelos, 'BIC')
 fit
 ```
+:::{.callout-note icon=false}
+
 ## Ejercicio 7
 **¿Cual es el mejor modelo para secuencias solo del genero Homo?**
 ```{r}
@@ -295,6 +328,8 @@ fitH <- as.pml(modelosH, 'BIC')
 fitH
 ```
 Sale que el mejor modelo es TrN+G(4)+I
+:::
+
 
 ## Máxima verosimilitud
 Una vez hemos seleccionado el modelo, podemos optimizar la topología del árbol, sus longitudes de ramas, y también los demás parámetros del modelo. Para ello, usaremos la función pml_bb(), que internamente usa las funciones pml() y optim.pml(). Podemos modular el comportamiento de pml_bb() (cuánta información muestra del proceso, cuántas iteraciones usa, cuándo decide que no puede mejorar el modelo…) con los parámetros definidos mediante pml.control(). A la función pml_bb() podemos proporcionarle el alineamiento (objeto de clase phyDat) y el nombre del modelo de evolución molecular, o bien un objeto de clase modelTest, de donde toma automáticamente el alineamiento y el modelo con un valor de BIC (Bayesian Information Criterion) más bajo.
@@ -311,6 +346,9 @@ Por defecto, pml_bb() usa un método de reordenación del árbol denominado “s
 ```{r}
 plot(mt_ml, align.tip.label = TRUE, main = 'Árbol más verosímil')
 ```
+:::{.callout-note icon=false}
+
+
 ## Ejercicio 8
 **El árbol no esta enraizado. Como las secuencias no son todas de las misma época, utiliza rtt() para situar la raíz en el punto más compatible con la hipótesis de reloj molecular.** 
 Primero hay que saber las edades
@@ -328,6 +366,8 @@ plot(mt_ml_rtt, align.tip.label = TRUE)
 mt_mh <- pml_bb(modelosH, control = pml.control (trace=0))
 plot(mt_mh, align.tip.label = TRUE, main = 'Arbol más verosímil para el subconjunto de secuencias del género Homo')
 ```
+:::
+
 
 ## Con datación de puntas (tip dating)
 El método de máxima verosimilitud genera árboles no enraizados por defecto, como consecuencia de la reversibilidad temporal. En esos árboles las longitudes de ramas són el número esperado de sustituciones por sitio, sin ninguna referencia explícita al tiempo. Pero cuando no todas las secuencias son isócronas, podemos usar la información de sus edades para constreñir la búsqueda del árbol más verosímil. Al usar las edades de las secuencias, estamos asumiendo un reloj molecular: una relación constante entre el tiempo y el número esperado de sustituciones acumuladas. Entonces, la posición de la raíz afecta la verosimilitud y el resultado es un árbol enraizado.
@@ -346,6 +386,8 @@ mt_ml_clock
 plot(mt_ml_clock, align.tip.label = TRUE)
 ```
 
+:::{.callout-note icon=false}
+
 ## Ejercicio 9
 **¿Cuál es la tasa de mutación global estimada?**
 La tasa de mutacion lo podemos encontrar en mt_ml_clock, es 1.15857e-08
@@ -354,7 +396,7 @@ La tasa de mutacion lo podemos encontrar en mt_ml_clock, es 1.15857e-08
 Numero de sustituciones por sitio
 
 **¿Cuánto tiempo dice el árbol que divergimos de los chimpancés? (Puedes usar la función cophenetic(), puesto que en el árbol datado las longitudes de las ramas están en años).**
-
+:::
 
 
 ## Estimación de edades
