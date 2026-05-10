@@ -3,10 +3,10 @@ title: "Trabajar con tablas o marcos de datos con R"
 lang: es
 date: today
 execute: 
-  output: false
+  output: true
   error: true
 engine: knitr
-bibliography: ../../references.bib
+bibliography: ../../doc/references.bib
 language:
    title-block-published: "Última actualización:"
    section-title-references: "Bibliografía"
@@ -15,13 +15,18 @@ format:
       embed-resources: true
 ---
 
-# Preparación
+## Preparación
 
 En esta práctica trabajaremos en el entorno de R, con los paquetes siguientes:
 `dplyr`, `kableExtra` y `jsonlite`. Para descargar algunos datos de ejemplo, usaremos
 los programas `datasets` y `dataformat` [@OLeary2024], que pueden descargarse en
-[este enlace](https://www.ncbi.nlm.nih.gov/datasets/docs/v2/command-line-tools/download-and-install/).
-
+[este enlace](https://www.ncbi.nlm.nih.gov/datasets/docs/v2/command-line-tools/download-and-inst#all/).
+Se han instalado todos los paquetes dando a descargar todo, lo ponía al entrar en R
+```{r}
+if (!require("dplyr")) install.packages("dplyr")
+if (!require("kableExtra")) install.packages("kableExtra")
+if (!require("jsonlite")) install.packages("jsonlite")
+```
 # Objetivos
 
 1. Conocer el uso de `datasets` y `dataformat`.
@@ -36,45 +41,69 @@ Veamos primero de qué opciones disponemos:
 
 ```{bash}
 if [ ! -e  trypanosoma_annotated.txt ]; then
-   datasets summary genome taxon Trypanosoma --annotated --as-json-lines | \
-   dataformat tsv genome --fields \
+   ../../../bin/datasets summary genome taxon Trypanosoma --annotated --as-json-lines | \
+   ../../../bin/dataformat tsv genome --fields \
       accession,organism-name,assminfo-release-date,assminfo-level,assmstats-atgc-count,annotinfo-featcount-gene-total,assminfo-type,assminfo-status > trypanosoma_annotated.txt
 fi
 ```
-
+**Como los paquetes los tengo instalados en bin, se pone ~/bin/datasets y lo mismo con dataformats. Para poner ponerlo de forma relativa se puede poner ../../../bin**
 La línea larga que sigue a `--fields` especifica qué información sobre los genomas
 queremos ver en la tabla. Para saber qué campos se pueden seleccionar, puedes
 ejecutar la orden `dataformat tsv genome --help`. Veamos esa tabla en el informe
 HTML en un formato adecuado.
+```{bash}
+~/bin/dataformat tsv genome --help 
+```
+
+```{r}
+install.packages("kableExtra")
+```
 
 ```{r}
 #| messages: false
 
-library('kableExtra')
+library(knitr)
 genomas <- read.table('trypanosoma_annotated.txt',
                       header = TRUE, sep = '\t')
-kable(genomas) %>% kable_styling()
+kable(genomas) 
 ```
-
+Da error, que no hay en la libreria un paquete llamado kableExtra, poniendo el comando system.file(package = "kableExtra") para ver si esta nos dice que no esta instalado, lo instalamos, no se puede instalar, en vez de library(kableExtra), ponemos libray(knitr) y eliminamos desde el primer %, ahora ya va, da como resultado una tabla.
+```{r}
+ls()
+class(genomas)
+```
 :::{.callout-note icon=false}
 ## Desafío
-1. ¿Qué diferencia hay entre las líneas 7 y 8 de la tabla anterior?
-2. Busca una función de R que te permita identificar las líneas repetidas en un
-   marco de datos.
+**1. ¿Qué diferencia hay entre las líneas 7 y 8 de la tabla anterior?**
+Que uno es GCA y el otro GCF.Vienen de diferentes fuentes. 
+**2. Busca una función de R que te permita identificar las líneas repetidas en un marco de datos.**
+```{r}
+filas_repetidas <- genomas[duplicated(genomas), ]
+print(filas_repetidas)
+sum(duplicated(genomas))
+```
+
+Con estos comandos podemos identificar las lineas repetidas en un marco de datos, en concreto en el objeto genomas, y con la función sum nos da el número de líneas repetidas
 :::
 
-# Ordenar una tabla
+## Ordenar una tabla
 La función `order()` produce los índices ordenados de los elementos de un vector.
 Consulta su ayuda y experimenta con ella. Vamos a usar esta función para ordenar
 las filas del marco de datos `genomas` por fecha, que es la tercera columna,
 llamada `Assembly.Release.Date`.
+```{r}
+help(order)
+```
+Order returns a permutation which rearranges its first argument into ascending or descending order, breaking ties by further arguments. sort.list does the same, using only one argument.
 
 ```{r}
 # Observa que asignamos el resultado del ordenamiento al mismo objeto que
 # estamos ordenando, para guardar el resultado sin tener que generar otro objeto.
+library(knitr)
 genomas <- genomas[order(genomas$Assembly.Release.Date), ]
-kable(genomas) %>% kable_styling()
+kable(genomas) 
 ```
+Como antes, he tenido que borrar desde los porcentajes en la linea kable(genomas) y poner library(knitr) para decirle de donde sacamos la función kable
 
 Casualmente, la fecha estaba en formato "%Y-%m-%d", en el que el orden alfabético
 coincide con el orden temporal. Al crear `genomas`, `read.table()` había interpretado
@@ -99,10 +128,9 @@ plot(x = genomas$Assembly.Release.Date,
      ylab = 'Longitud total secuenciada (bp)',
      main = 'Genomas anotados de Trypanosoma')
 ```
-
-# Archivos JSON y GFF
-Habiendo visto las opciones, decidimos descargar el genoma y la anotación funcional
-de una de ellas, por ejemplo GCA_022059095.1.
+Sale una grafica donde la fecha de publicación es el eje X y los bp de la secuencia es el eje Y
+## Archivos JSON y GFF
+Habiendo visto las opciones, decidimos descargar el genoma y la anotación funcional de una de ellas, por ejemplo GCA_022059095.1.
 
 ```{bash}
 if [ ! -e ncbi_data/data/GCA_022059095.1/genomic.gff ]; then
@@ -112,6 +140,7 @@ if [ ! -e ncbi_data/data/GCA_022059095.1/genomic.gff ]; then
    unzip ncbi_dataset.zip
 fi
 ```
+Vemos que se han creado dos carpetas de ncbi_dataset, lo he descargado primero en la carpeta de results del dia de hoy, pero lo he borrado y lo he descargado otra vez en data. Ahora me da error, era porque me habia separado una orden, ya esta solucionado
 
 En la carpeta `ncbi_dataset/data` encontrarás un archivo en formato JSON con
 información sobre los datos descargados, y un archivo en formato "jsonlines".
@@ -121,43 +150,54 @@ datos en la línea de órdenes. Para ver mejor el contenido del archivo con la
 extensión `jsonl`, podríamos utilizar el programa [`jq`](https://jqlang.org/),
 o bien utilizar la función `prettify()` del paquete `jsonlite` de R:
 
+**file.choose() para saber la ruta completa del archivo data_report.json1, r nos devuelve la dirección completa, la copiamos dentro de readLines**
 ```{r}
 #| message: false
 
 library('jsonlite')
-prettify(readLines('ncbi_dataset/data/assembly_data_report.jsonl'))
+prettify(readLines("/home/amalia/cuaderno/data/ncbi_dataset/data/assembly_data_report.jsonl"))
 ```
 
-Volviendo a lo que nos interesa, vamos a cargar en un marco de datos de una
-sesión de R la anotación funcional del genoma escogido. Aunque existen funciones
-específicas para leer archivos GFF, usaremos la función básica `read.table()`,
-con alguna precaución.
-
+Volviendo a lo que nos interesa, vamos a cargar en un marco de datos de una sesión de R la anotación funcional del genoma escogido. Aunque existen funciones específicas para leer archivos GFF, usaremos la función básica `read.table()`, con alguna precaución.
+Volvemos a ejecutar file.choose para saber la direccion y la cambiamos en el codigo
+file.choose()
 ```{r}
 # Como no tiene cabecera, le damos los nombres de las columnas:
-gff <- read.table('ncbi_dataset/data/GCA_022059095.1/genomic.gff', sep = '\t',
+gff <- read.table("/home/amalia/cuaderno/data/ncbi_dataset/data/GCA_022059095.1/genomic.gff", sep = '\t',
                   col.names = c('seqid', 'source', 'type', 'start', 'end',
                                 'score', 'strand', 'phase', 'attributes'),
                   quote = '')
 ```
 
-Al leer el archivo GFF con `read.table()`, debemos especificar que el separador
-de columnas es el tabulador y que no hay texto entrecomillado en el archivo.
-Esto último se consigue con la opción `quote = ''`, y sirve para evitar que todo
-lo que se encuentre entre dos apóstrofes (*'*) se considere parte de un mismo campo
-de información, aunque sean cientos de líneas.
+Al leer el archivo GFF con `read.table()`, debemos especificar que el separador de columnas es el tabulador y que no hay texto entrecomillado en el archivo. Esto último se consigue con la opción `quote = ''`, y sirve para evitar que todo lo que se encuentre entre dos apóstrofes (*'*) se considere parte de un mismo campo de información, aunque sean cientos de líneas.
 
-Para comprobar que el archivo ha sido leído completo y sin errores, conviene
-revisar las dimensiones del marco de datos (`dim(gff)`) o incluso visualizar
-el principio (`head(gff)`) y el final (`tail(gff)`) del objeto, que es demasiado
-grande para mostrarlo en pantalla completo.
-
+Para comprobar que el archivo ha sido leído completo y sin errores, conviene revisar las dimensiones del marco de datos (`dim(gff)`) o incluso visualizar el principio (`head(gff)`) y el final (`tail(gff)`) del objeto, que es demasiado grande para mostrarlo en pantalla completo.
+```{r}
+dim(gff)
+```
+42497     9
+```{r}
+head(gff)
+```
+Salen las 6 primeras filas y luego los atributes
+```{r}
+tail(gff)
+```
+Salen las ultimas 6 filas y luego los atributes
 ## Seleccionar filas y columnas
-En el objeto `gff` hay 5 valores diferentes de la variable `type`: "CDS", "exon",
-"gene", "mRNA" y "region". Puedes comprobarlo con `unique(gff$type)`, o con
-`table(gff$type)`. Podemos separar la tabla en cinco marcos de datos, que
+En el objeto `gff` hay 5 valores diferentes de la variable `type`: "CDS", "exon", "gene", "mRNA" y "region". Puedes comprobarlo con `unique(gff$type)`, o con `table(gff$type)`. 
+Podemos separar la tabla en cinco marcos de datos, que
 correspondan a esos cinco tipos de anotación funcional.
+```{r}
+unique(gff$type)
+```
+[1] "region" "gene"   "mRNA"   "exon"   "CDS" 
+```{r}
+table(gff$type)
+```
 
+CDS   exon   gene   mRNA region 
+11304  11304   9768  10057     64 
 ```{r}
 # Usamos un vector booleano como índice de las filas.
 # En las tablas nuevas, no necesitamos la tercera columna
@@ -177,6 +217,15 @@ region <- gff[gff$type == 'region', -3]
 Identifica en cada uno de estos marcos de datos qué columnas son invariables. Es
 decir, las columnas que tienen el mismo valor en todas las líneas. Y elimina esas
 columnas.
+```{r}
+columnas_invariables <- sapply(gff, function(x) length(unique(x)) == 1)
+```
+Para agrupar las columnas invariables
+```{r}
+names(gfnames(ggf)[columnas_invariables]f)[columnas_invariables] 
+```
+Ppara saber las columnas invariables
+
 :::
 
 ## Agrupar, operar y resumir
