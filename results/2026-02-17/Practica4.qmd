@@ -214,17 +214,23 @@ region <- gff[gff$type == 'region', -3]
 
 :::{.callout-note icon=false}
 ## Desafío
-Identifica en cada uno de estos marcos de datos qué columnas son invariables. Es
-decir, las columnas que tienen el mismo valor en todas las líneas. Y elimina esas
-columnas.
+Identifica en cada uno de estos marcos de datos qué columnas son invariables. Es decir, las columnas que tienen el mismo valor en todas las líneas. Y elimina esas columnas.
+
 ```{r}
 columnas_invariables <- sapply(gff, function(x) length(unique(x)) == 1)
 ```
-Para agrupar las columnas invariables
+
+Para saber cuales son las columnas invariables:
+
 ```{r}
-names(gfnames(ggf)[columnas_invariables]f)[columnas_invariables] 
+names(gff)[columnas_invariables]
 ```
-Ppara saber las columnas invariables
+
+Ahora para quitar las columnas invariables:
+```{r}
+gff_limpio <- gff[, !columnas_invariables]
+head(gff_limpio)
+```
 
 :::
 
@@ -243,7 +249,7 @@ resumen <- data.frame(
    tipo       = 'CDS',
    número     = nrow(cds),
    long.Media = mean(cds$longitud),
-   long.SD    = sd(cds$longitud),
+   long.SD    = sd(cds$longitud)
 )
 ```
 
@@ -251,6 +257,28 @@ resumen <- data.frame(
 ## Desafío
 ¿Sabrías completar el marco de datos `resumen` con los datos de los otros cuatro
 tipos de anotación funcional?
+Primero calculamos la longitud de cada dato:
+```{r}
+
+gene$longitud   <- gene$end - gene$start + 1
+mrna$longitud   <- mrna$end - mrna$start + 1
+exon$longitud   <- exon$end - exon$start + 1
+region$longitud <- region$end - region$start + 1
+```
+Ahora lo juntamos todo en una tabla:
+```{r}
+
+resumen_completo <- rbind(
+  resumen, 
+  data.frame(tipo = 'gene',   número = nrow(gene),   long.Media = mean(gene$longitud),   long.SD = sd(gene$longitud)),
+  data.frame(tipo = 'mRNA',   número = nrow(mrna),   long.Media = mean(mrna$longitud),   long.SD = sd(mrna$longitud)),
+  data.frame(tipo = 'exon',   número = nrow(exon),   long.Media = mean(exon$longitud),   long.SD = sd(exon$longitud)),
+  data.frame(tipo = 'region', número = nrow(region), long.Media = mean(region$longitud), long.SD = sd(region$longitud))
+)
+
+
+print(resumen_completo)
+```
 :::
 
 Este tipo de operación es bastante habitual, y se puede hacer sin necesidad de
@@ -295,10 +323,9 @@ resumen <- data.frame(
 kable(resumen,
       col.names = c('Tipo', 'Número', 'Longitud Media',
                     'Desviación estándar'),
-      row.names = FALSE) %>% 
-   kable_styling(full_width = FALSE)
+      row.names = FALSE) 
 ```
-
+En el código de arriba da error porque no encuentra el kable_styling, eliminamos el codigo a partir del porcentaje, como antes. 
 Las operaciones de agrupar y resumir se pueden hacer también con funciones
 del paquete `dplyr`, que forma parte de un conjunto de paquetes diseñados para
 funcionar armoniosamente entre ellos. Son los paquetes del
@@ -319,14 +346,22 @@ resumen <- gff %>% group_by(type) %>% summarise(
 kable(resumen,
       col.names = c('Tipo', 'Número', 'Longitud Media',
                     'Desviación estándar'),
-      row.names = FALSE) %>%
-   kable_styling(full_width = FALSE)
+      row.names = FALSE) 
 ```
 
 :::{.callout-note icon=false}
 ## Desafío
-Crea una tabla con el número total de genes en cada cromosoma. ¿Puedes contar
-cuántos hay codificados en cada sentido ("strand") y en cada cromosoma?
+Crea una tabla con el número total de genes en cada cromosoma. ¿Puedes contar cuántos hay codificados en cada sentido ("strand") y en cada cromosoma?
+```{r}
+library(dplyr)
+genes_por_cromosomaysentido <- gff %>%
+  dplyr::filter(type == 'gene') %>%      
+  group_by(seqid, strand) %>%             
+  summarise(total_genes = n())    
+
+print(genes_por_cromosomaysentido)
+```
+En el código filtramos por genes y agrupamos por sequid, que es como se denominan los diferentes cromosomas en el objeto gff y por strand, que es el sentido. El resultado nos da el numero de genes por cromosoma y por sentido.
 :::
 
 # Comparar o cruzar datos
@@ -357,6 +392,17 @@ dim(interesantes)
 :::{.callout-note icon=false}
 ## Desafío
 ¿Puedes limitar la selección a anotaciones de tipo "gene"?
+Utilizamos el paquete dplyr como antes:
+```{r}
+library(dplyr)
+
+interesantes2 <- gff %>%
+  dplyr::filter(seqid %in% candidatos, type == "gene")
+
+# Comprobamos las nuevas dimensiones
+dim(interesantes2)
+```
+Ahora el objeto interesantes2 es más pequeño, porque se ha limitado la selección a anotaciones de tipo gene.
 :::
 
 El estudio avanza y reduce el tamaño de las regiones candidatas, así que ahora
@@ -392,6 +438,18 @@ interesantes <- gff[f, ]
 ## Desafío
 ¿Puedes cambiar los filtros para que incluyan también genes *parcialmente*
 contenidos en los intervalos indicados?
+```{r}
+f1 <- gff$seqid == 'JAJSEB010000048.1' & gff$start <= 253478 & gff$end >= 184638
+f2 <- gff$seqid == 'JAJSEB010000012.1' & gff$start <= 348860 & gff$end >= 133444
+f3 <- gff$seqid == 'JAJSEB010000020.1' & gff$start <= 149614 & gff$end >= 73393
+f4 <- gff$seqid == 'JAJSEB010000016.1' & gff$start <= 272009 & gff$end >= 161247
+f5 <- gff$seqid == 'JAJSEB010000033.1' & gff$start <= 170687 & gff$end >= 123135
+
+f <- f1 | f2 | f3 | f4 | f5
+
+interesantes <- gff[f, ]
+```
+Se intercambia el inicio y el final del intervalo. El final del gen tiene que ser igual o mayor al inicio del intervalo y el inicio del gen tiene que ser menor o igual que el final del intervalo.
 :::
 
 # Las llaves y la función `match()`
@@ -405,6 +463,10 @@ la integridad de la tabla y relacionar unas tablas con otras.
 
 :::{.callout-note icon=false}
 ¿Cuál es la *llave* en un archivo GFF?
+Es la columna de atributos, se puede ver utilizando el comando head(gff)
+```{r}
+head(gff)
+```
 :::
 
 El código siguiente descarga la tabla de genomas de *Trypanosoma* ensamblados
