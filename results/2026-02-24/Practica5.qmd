@@ -274,6 +274,20 @@ curl_download(URL, destfile = 'Adh.fasta')
 Intenta descargar esas mismas secuencias en formato EMBL.
 :::
 
+Para ello:
+
+```{r}
+portal    <- 'https://www.ebi.ac.uk/ena/browser/api/'
+formato2   <- 'embl/'
+accession <- 'AAC39011,AAY25307,ABU44510,ABG56046,AAO06902'
+URL2 <- paste0(portal, formato2, accession)
+URL2
+```
+
+```{r}
+curl_download(URL2, destfile = 'Adh.EMBL')
+```
+
 # Apéndice
 ## Campos de información para filtrar la búsqueda de resultados de tipo *coding*
 
